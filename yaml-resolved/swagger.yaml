@@ -1,0 +1,249 @@
+openapi: 3.0.0
+info:
+  title: API UP ACECA
+  description: '-----'
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/DanieleCerioni/UPACEA/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: ODM
+  description: Tutte le informazioni riguardanti gli organi di manovra
+- name: RGDM
+  description: Tutte le informazioni riguardanti il rilevatore di guasti multidirezionale
+- name: UP
+  description: Tutte le informazioni riguradanti l'unità periferica
+paths:
+  /odms:
+    get:
+      tags:
+      - odm
+      operationId: getAllOdm
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ODMLISTRESPONSE'
+    post:
+      tags:
+      - odm
+      operationId: addOdm
+  /odm/{idOdm}:
+    get:
+      tags:
+      - odm
+      operationId: getOdm
+      parameters:
+      - name: idOdm
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ODMRESPONSE'
+        "400":
+          description: Invalid ID supplied
+          content: {}
+        "404":
+          description: Odm not found
+          content: {}
+components:
+  schemas:
+    ODM:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        identifier:
+          type: string
+        tipology:
+          type: string
+        vendor:
+          type: string
+        model:
+          type: string
+        actualStatus:
+          type: string
+          description: stato odm
+          enum:
+          - "true"
+          - "false"
+          - DISCONESSO
+        currentP1:
+          type: integer
+          format: int32
+          default: 0
+        currentP2:
+          type: integer
+          format: int32
+          default: 0
+        currentP3:
+          type: integer
+          format: int32
+          default: 0
+        voltageP1:
+          type: integer
+          format: int32
+          default: 0
+        voltageP2:
+          type: integer
+          format: int32
+          default: 0
+        voltageP3:
+          type: integer
+          format: int32
+          default: 0
+    RGDM:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        identifier:
+          type: string
+        tipology:
+          type: string
+        vendor:
+          type: string
+        model:
+          type: string
+        actualStatus:
+          type: string
+          description: stato odm
+          enum:
+          - "true"
+          - "false"
+          - DISCONNECTED
+        currentP1:
+          type: integer
+          format: int32
+          default: 0
+        currentP2:
+          type: integer
+          format: int32
+          default: 0
+        currentP3:
+          type: integer
+          format: int32
+          default: 0
+        voltageP1:
+          type: integer
+          format: int32
+          default: 0
+        voltageP2:
+          type: integer
+          format: int32
+          default: 0
+        voltageP3:
+          type: integer
+          format: int32
+          default: 0
+        statusAlarms:
+          type: string
+        statusProtection:
+          type: string
+    UP:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        info:
+          type: string
+        alarm:
+          type: string
+        configuration:
+          $ref: '#/components/schemas/SETUP'
+    STM:
+      type: object
+      properties:
+        firstIp:
+          type: string
+        secondIp:
+          type: string
+        netInteface:
+          type: string
+    GOOSE:
+      type: object
+      properties:
+        routing:
+          type: string
+        macAddress:
+          type: string
+        repetitionInterval:
+          type: string
+        netInterface:
+          type: string
+        bpfFilter:
+          type: string
+    NETWORK:
+      type: object
+      properties:
+        ETH0:
+          $ref: '#/components/schemas/NETWORK_INTERFACE'
+        ETH1:
+          $ref: '#/components/schemas/NETWORK_INTERFACE'
+        WLAN0:
+          $ref: '#/components/schemas/NETWORK_INTERFACE'
+    NETWORK_INTERFACE:
+      type: object
+      properties:
+        status:
+          type: string
+        configure:
+          type: string
+        ipAddress:
+          type: string
+        subnetMask:
+          type: string
+        gateway:
+          type: string
+        dnsServers:
+          type: string
+    SETUP:
+      type: object
+      properties:
+        STM:
+          $ref: '#/components/schemas/STM'
+        GOOSE:
+          $ref: '#/components/schemas/GOOSE'
+        NETWORK:
+          $ref: '#/components/schemas/NETWORK'
+    APIRESPONSE:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 200
+        payload:
+          type: object
+          properties: {}
+    ODMRESPONSE:
+      properties:
+        payload:
+          $ref: '#/components/schemas/ODM'
+      allOf:
+      - $ref: '#/components/schemas/APIRESPONSE'
+      - type: object
+    ODMLISTRESPONSE:
+      properties:
+        payload:
+          type: array
+          items:
+            $ref: '#/components/schemas/ODM'
+      allOf:
+      - $ref: '#/components/schemas/APIRESPONSE'
+      - type: object

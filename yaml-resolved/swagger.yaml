@@ -14,10 +14,46 @@ tags:
 - name: UP
   description: All the info about the UP
 paths:
+  /up/stm:
+    get:
+      tags:
+      - UP
+      summary: return the connection stats with the stm
+      description: return the actual connection stats with the stm
+      operationId: callStm
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStm'
+        "404":
+          description: Not found
+          content: {}
+  /up/stm/connection:
+    get:
+      tags:
+      - UP
+      summary: return the status of the active connection with the stm
+      description: return the status of the active connection with the stm
+      operationId: calledStm
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStmConnection'
+        "404":
+          description: Not found
+          content: {}
   /up/{domain}/odms:
     get:
       tags:
       - ODM
+      summary: return the list of the connected odms
+      description: return the full list of the connected odms with the relative properties
       operationId: getAllOdm
       parameters:
       - name: domain
@@ -27,10 +63,7 @@ paths:
         style: simple
         explode: false
         schema:
-          type: string
-          enum:
-          - bt
-          - mt
+          $ref: '#/components/schemas/Domain'
       responses:
         "200":
           description: successful operation
@@ -45,6 +78,7 @@ paths:
       tags:
       - ODM
       summary: add an odm to the system
+      description: add a single odm with the parameters added in input
       operationId: addOdm
       parameters:
       - name: domain
@@ -54,10 +88,7 @@ paths:
         style: simple
         explode: false
         schema:
-          type: string
-          enum:
-          - bt
-          - mt
+          $ref: '#/components/schemas/Domain'
       requestBody:
         description: add an odm to the platform
         content:
@@ -67,6 +98,13 @@ paths:
       responses:
         "200":
           description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "405":
           description: Invalid input
           content: {}
@@ -75,6 +113,8 @@ paths:
     get:
       tags:
       - ODM
+      summary: return the statistics fot the single odm
+      description: return the statistics fot the single odm
       operationId: getOdm
       parameters:
       - name: domain
@@ -84,10 +124,7 @@ paths:
         style: simple
         explode: false
         schema:
-          type: string
-          enum:
-          - bt
-          - mt
+          $ref: '#/components/schemas/Domain'
       - name: idOdm
         in: path
         description: ID of odm to return
@@ -114,6 +151,44 @@ paths:
           description: Odm not found
           content: {}
       x-codegen-request-body-name: body
+    delete:
+      tags:
+      - ODM
+      summary: remove an odm
+      description: remove the selected odm from the system
+      operationId: delOdm
+      parameters:
+      - name: domain
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Domain'
+      - name: idOdm
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
+        "405":
+          description: Invalid input
+          content: {}
+    x-codegen-request-body-name: body
   /up-simulator/{domain}/odms/{idOdm}:
     put:
       tags:
@@ -130,10 +205,7 @@ paths:
         style: simple
         explode: false
         schema:
-          type: string
-          enum:
-          - bt
-          - mt
+          $ref: '#/components/schemas/Domain'
       - name: idOdm
         in: path
         description: id of the odm
@@ -151,12 +223,22 @@ paths:
         required: true
       responses:
         "200":
-          description: Succeful
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "400":
           description: invalid data
           content: {}
         "404":
           description: odm not found
+          content: {}
+        "405":
+          description: Invalid input
           content: {}
     post:
       tags:
@@ -171,10 +253,7 @@ paths:
         style: simple
         explode: false
         schema:
-          type: string
-          enum:
-          - bt
-          - mt
+          $ref: '#/components/schemas/Domain'
       - name: idOdm
         in: path
         description: ID of odm to return
@@ -193,28 +272,23 @@ paths:
         required: true
       responses:
         "200":
-          description: Successful operation
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "405":
-          description: Invalid Input
+          description: Invalid input
           content: {}
-  /rgdms/{domain}:
+  /rgdms:
     post:
       tags:
       - RGDM
       summary: add an rgdm to the system
       operationId: addRgdm
-      parameters:
-      - name: domain
-        in: path
-        description: ID of odm to return
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          enum:
-          - bt
-          - mt
       requestBody:
         description: add an RGDM to the platform
         content:
@@ -223,12 +297,18 @@ paths:
               $ref: '#/components/schemas/Rgdm'
       responses:
         "200":
-          description: Succeful Input
-          content: {}
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "405":
           description: Invalid input
           content: {}
-  /rgdms/{domain}/{idRgdm}:
+  /rgdms/{idRgdm}:
     get:
       tags:
       - RGDM
@@ -236,17 +316,6 @@ paths:
       description: return the info for the selected rgdm
       operationId: getRgdm
       parameters:
-      - name: domain
-        in: path
-        description: ID of odm to return
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          enum:
-          - bt
-          - mt
       - name: idRgdm
         in: path
         description: ID of rgdm to return
@@ -280,20 +349,9 @@ paths:
         of the medium or low voltage
       operationId: sendCommandRgdm
       parameters:
-      - name: domain
-        in: path
-        description: ID of odm to return
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          enum:
-          - bt
-          - mt
       - name: idRgdm
         in: path
-        description: the id of the selected rgdm
+        description: ID of rgdm to return
         required: true
         style: simple
         explode: false
@@ -308,10 +366,16 @@ paths:
               $ref: '#/components/schemas/RgdmAction'
       responses:
         "200":
-          description: Command Sended!
-          content: {}
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "405":
-          description: Invalid Input
+          description: Invalid input
           content: {}
     delete:
       tags:
@@ -329,29 +393,32 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: domain
-        in: path
-        description: ID of odm to return
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          enum:
-          - bt
-          - mt
       responses:
         "200":
-          description: Succeful operation
-          content: {}
+          description: Succefull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
         "400":
           description: Invalid ID
           content: {}
         "404":
           description: Rgdm not found
           content: {}
+        "405":
+          description: Invalid input
+          content: {}
 components:
   schemas:
+    Domain:
+      type: string
+      enum:
+      - bt
+      - mt
     Phase:
       type: object
       properties:
@@ -387,8 +454,8 @@ components:
           type: string
           description: status odm
           enum:
-          - "true"
-          - "false"
+          - "ON"
+          - "OFF"
           - DISCONNECTED
         phases:
           type: array
@@ -412,8 +479,8 @@ components:
           type: string
           description: stato odm
           enum:
-          - "true"
-          - "false"
+          - "ON"
+          - "OFF"
           - DISCONNECTED
         statusAlarms:
           type: string
@@ -429,6 +496,20 @@ components:
         remoteTrip:
           type: string
         remoteClose:
+          type: string
+    NetStm:
+      type: object
+      properties:
+        id:
+          type: string
+        ip:
+          type: string
+    NetStmConnection:
+      type: object
+      properties:
+        ActiveConnection:
+          type: string
+        ConnectionStatus:
           type: string
     UP:
       type: object
@@ -575,3 +656,5 @@ components:
         "statusProtection":"ON", "phases": [ { "name": "P1", "current": 10, "voltage":
         10 }, { "name": "P2", "current": -5, "voltage": -5 }, { "name": "P3", "current":
         -5, "voltage": -5 } ] } }'
+    apiResponseOK:
+      value: '{"code":200, "payload": {"message":"SUCCESS"}}'

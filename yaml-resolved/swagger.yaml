@@ -25,21 +25,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ODMLISTRESPONSE'
+                $ref: '#/components/schemas/OdmListResponse'
     post:
       tags:
       - odm
-      summary: add new odm
       operationId: addOdm
       requestBody:
-        description: The odm to add to the dashboard
+        description: add an odm to the platform
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ODM'
+              $ref: '#/components/schemas/Odm'
       responses:
         "405":
-          description: Invalid Input
+          description: Invalid input
           content: {}
   /odm/{idOdm}:
     get:
@@ -62,7 +61,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ODMRESPONSE'
+                $ref: '#/components/schemas/OdmResponse'
         "400":
           description: Invalid ID supplied
           content: {}
@@ -71,7 +70,24 @@ paths:
           content: {}
 components:
   schemas:
-    ODM:
+    Phase:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - R
+          - S
+          - T
+        current:
+          type: integer
+          format: int32
+          default: 0
+        voltage:
+          type: integer
+          format: int32
+          default: 0
+    Odm:
       type: object
       properties:
         id:
@@ -87,49 +103,16 @@ components:
           type: string
         actualStatus:
           type: string
-          description: stato odm
+          description: status odm
           enum:
           - "true"
           - "false"
-          - DISCONESSO
-        currentP1:
-          type: integer
-          format: int32
-          default: 0
-        currentP2:
-          type: integer
-          format: int32
-          default: 0
-        currentP3:
-          type: integer
-          format: int32
-          default: 0
-        voltageP1:
-          type: integer
-          format: int32
-          default: 0
-        voltageP2:
-          type: integer
-          format: int32
-          default: 0
-        voltageP3:
-          type: integer
-          format: int32
-          default: 0
-    ADDODM:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          default: 1
-        tipology:
-          type: string
-        vendor:
-          type: string
-        model:
-          type: string
-    RGDM:
+          - DISCONNECTED
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/Phase'
+    Rgdm:
       type: object
       properties:
         id:
@@ -150,34 +133,14 @@ components:
           - "true"
           - "false"
           - DISCONNECTED
-        currentP1:
-          type: integer
-          format: int32
-          default: 0
-        currentP2:
-          type: integer
-          format: int32
-          default: 0
-        currentP3:
-          type: integer
-          format: int32
-          default: 0
-        voltageP1:
-          type: integer
-          format: int32
-          default: 0
-        voltageP2:
-          type: integer
-          format: int32
-          default: 0
-        voltageP3:
-          type: integer
-          format: int32
-          default: 0
         statusAlarms:
           type: string
         statusProtection:
           type: string
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/Phase'
     UP:
       type: object
       properties:
@@ -189,7 +152,16 @@ components:
         alarm:
           type: string
         configuration:
-          $ref: '#/components/schemas/SETUP'
+          $ref: '#/components/schemas/Setup'
+    Setup:
+      type: object
+      properties:
+        STM:
+          $ref: '#/components/schemas/STM'
+        GOOSE:
+          $ref: '#/components/schemas/GOOSE'
+        Network:
+          $ref: '#/components/schemas/Network'
     STM:
       type: object
       properties:
@@ -212,18 +184,19 @@ components:
           type: string
         bpfFilter:
           type: string
-    NETWORK:
+    Network:
       type: object
       properties:
-        ETH0:
-          $ref: '#/components/schemas/NETWORK_INTERFACE'
-        ETH1:
-          $ref: '#/components/schemas/NETWORK_INTERFACE'
-        WLAN0:
-          $ref: '#/components/schemas/NETWORK_INTERFACE'
-    NETWORK_INTERFACE:
+        networkInterfaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkInterface'
+    NetworkInterface:
       type: object
       properties:
+        name:
+          type: string
+          description: ETH0, ETH1, WLAN0
         status:
           type: string
         configure:
@@ -236,38 +209,42 @@ components:
           type: string
         dnsServers:
           type: string
-    SETUP:
+    ErrorMessage:
       type: object
       properties:
-        STM:
-          $ref: '#/components/schemas/STM'
-        GOOSE:
-          $ref: '#/components/schemas/GOOSE'
-        NETWORK:
-          $ref: '#/components/schemas/NETWORK'
-    APIRESPONSE:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+    ErrorResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/ErrorMessage'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    ApiResponse:
       type: object
       properties:
         code:
           type: integer
           format: int32
-          example: 200
         payload:
           type: object
           properties: {}
-    ODMRESPONSE:
+    OdmResponse:
       properties:
         payload:
-          $ref: '#/components/schemas/ODM'
+          $ref: '#/components/schemas/Odm'
       allOf:
-      - $ref: '#/components/schemas/APIRESPONSE'
+      - $ref: '#/components/schemas/ApiResponse'
       - type: object
-    ODMLISTRESPONSE:
+    OdmListResponse:
       properties:
         payload:
           type: array
           items:
-            $ref: '#/components/schemas/ODM'
+            $ref: '#/components/schemas/Odm'
       allOf:
-      - $ref: '#/components/schemas/APIRESPONSE'
+      - $ref: '#/components/schemas/ApiResponse'
       - type: object

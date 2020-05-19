@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: API UP ACECA
+  title: API UP ACEA
   description: '-----'
   version: 1.0.0
 servers:
@@ -8,16 +8,16 @@ servers:
   description: SwaggerHub API Auto Mocking
 tags:
 - name: ODM
-  description: Tutte le informazioni riguardanti gli organi di manovra
+  description: All the info about the ODM
 - name: RGDM
-  description: Tutte le informazioni riguardanti il rilevatore di guasti multidirezionale
+  description: All the info's about the RGDM
 - name: UP
-  description: Tutte le informazioni riguradanti l'unità periferica
+  description: All the info about the UP
 paths:
   /odms:
     get:
       tags:
-      - odm
+      - ODM
       operationId: getAllOdm
       responses:
         "200":
@@ -26,9 +26,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OdmListResponse'
+              examples:
+                ex1:
+                  $ref: '#/components/examples/odmListResponse1'
     post:
       tags:
-      - odm
+      - ODM
       summary: add an odm to the system
       operationId: addOdm
       requestBody:
@@ -39,17 +42,16 @@ paths:
               $ref: '#/components/schemas/Odm'
       responses:
         "200":
-          description: Succeful Input
+          description: Succefull Input
           content: {}
         "405":
           description: Invalid input
           content: {}
       x-codegen-request-body-name: body
-    x-codegen-request-body-name: body
-  /odm/{idOdm}:
+  /odms/{idOdm}:
     get:
       tags:
-      - odm
+      - ODM
       operationId: getOdm
       parameters:
       - name: idOdm
@@ -63,11 +65,14 @@ paths:
           format: int64
       responses:
         "200":
-          description: successful operation
+          description: successfull operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OdmResponse'
+              examples:
+                ex1:
+                  $ref: '#/components/examples/odmResponse1'
         "400":
           description: Invalid ID supplied
           content: {}
@@ -75,10 +80,44 @@ paths:
           description: Odm not found
           content: {}
       x-codegen-request-body-name: body
-  /up-simulator/{idOdm}/command:
+  /up-simulator/odms/{idOdm}:
+    put:
+      tags:
+      - UP
+      summary: Simulate current and voltage for the selected Odm
+      description: Set the parameters to simulate the current and voltage for a specific
+        odm
+      operationId: simulOdm
+      parameters:
+      - name: idOdm
+        in: path
+        description: id of the odm
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: send the value for the simulation
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Phase'
+        required: true
+      responses:
+        "200":
+          description: Succeful
+          content: {}
+        "400":
+          description: invalid data
+          content: {}
+        "404":
+          description: odm not found
+          content: {}
+  /up-simulator/odms/{idOdm}/command:
     post:
       tags:
-      - odmCommand
+      - UP
       summary: commands to send to the breaker
       operationId: sendCommand
       parameters:
@@ -101,6 +140,115 @@ paths:
       responses:
         "200":
           description: Successful operation
+          content: {}
+        "405":
+          description: Invalid Input
+          content: {}
+  /rgdm:
+    post:
+      tags:
+      - RGDM
+      summary: add an rgdm to the system
+      operationId: addRgdm
+      requestBody:
+        description: add an RGDM to the platform
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rgdm'
+      responses:
+        "200":
+          description: Succeful Input
+          content: {}
+        "405":
+          description: Invalid input
+          content: {}
+  /rgdm/{idRgdm}:
+    get:
+      tags:
+      - RGDM
+      summary: return the info for the selected rgdm
+      description: return the info for the selected rgdm
+      operationId: getRgdm
+      parameters:
+      - name: idRgdm
+        in: path
+        description: ID of rgdm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RgdmResponse'
+              examples:
+                ex1:
+                  $ref: '#/components/examples/rgdmResponse1'
+        "400":
+          description: Invalid ID supplied
+          content: {}
+        "404":
+          description: Rgdm not found
+          content: {}
+    delete:
+      tags:
+      - RGDM
+      summary: delete the selected rgdm by id from the system
+      description: delete the selected rgdm by the system
+      operationId: delRgdm
+      parameters:
+      - name: rgdmId
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Succeful operation
+          content: {}
+        "400":
+          description: Invalid ID
+          content: {}
+        "404":
+          description: Rgdm not found
+          content: {}
+  /rgdm/{idRgdm}/action:
+    post:
+      tags:
+      - RGDM
+      summary: simulate the send of the command
+      description: simulate the send of the command on a specific rgdm in the domain
+        of the medium or low voltage
+      operationId: sendCommandRgdm
+      parameters:
+      - name: idRgdm
+        in: path
+        description: the id of the selected rgdm
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: send the seguent command to the rgdm
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RgdmAction'
+      responses:
+        "200":
+          description: Command Sended!
           content: {}
         "405":
           description: Invalid Input
@@ -178,6 +326,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Phase'
+    RgdmAction:
+      type: object
+      properties:
+        remoteTrip:
+          type: string
+        remoteClose:
+          type: string
     UP:
       type: object
       properties:
@@ -294,3 +449,32 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
+    RgdmResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/RgdmResponse'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+  examples:
+    odmResponse1:
+      value: '{"code":200, "payload": { "id": 1, "identifier": "ODM 1", "tipology":
+        "MEDIA TENSIONE", "vendor": "BTICINO", "model": "A500", "actualStatus": "ON",
+        "phases": [ { "name": "P1", "current": 10, "voltage": 10 }, { "name": "P2",
+        "current": -5, "voltage": -5 }, { "name": "P3", "current": -5, "voltage":
+        -5 } ] } }'
+    odmListResponse1:
+      value: '{"code":200, "payload": [{ "id": 1, "identifier": "ODM 1", "tipology":
+        "MEDIA TENSIONE", "vendor": "BTICINO", "model": "A500", "actualStatus": "ON",
+        "phases": [ { "name": "P1", "current": 10, "voltage": 10 }, { "name": "P2",
+        "current": -5, "voltage": -5 }, { "name": "P3", "current": -5, "voltage":
+        -5 } ] }, { "id": 2, "identifier": "ODM 2", "tipology": "BASSA TENSIONE",
+        "vendor": "ABB", "model": "a5600", "actualStatus": "OFF", "phases": [ { "name":
+        "P1", "current": 0, "voltage": 0 }, { "name": "P2", "current": 0, "voltage":
+        0 }, { "name": "P3", "current": 0, "voltage": 0 } ] } ] }'
+    rgdmResponse1:
+      value: '{"code":200, "payload": { "id": 1, "identifier": "RGDM 1", "tipology":
+        "", "vendor": "ENNEBI", "model": "A500", "actualStatus": "ON", "statusAlarms":"ON",
+        "statusProtection":"ON", "phases": [ { "name": "P1", "current": 10, "voltage":
+        10 }, { "name": "P2", "current": -5, "voltage": -5 }, { "name": "P3", "current":
+        -5, "voltage": -5 } ] } }'

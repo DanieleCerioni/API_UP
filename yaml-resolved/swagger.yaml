@@ -76,9 +76,9 @@ components:
         name:
           type: string
           enum:
-          - R
-          - S
-          - T
+          - P1
+          - P2
+          - P3
         current:
           type: integer
           format: int32

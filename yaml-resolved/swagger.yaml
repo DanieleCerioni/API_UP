@@ -29,7 +29,18 @@ paths:
     post:
       tags:
       - odm
+      summary: add new odm
       operationId: addOdm
+      requestBody:
+        description: The odm to add to the dashboard
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ODM'
+      responses:
+        "405":
+          description: Invalid Input
+          content: {}
   /odm/{idOdm}:
     get:
       tags:
@@ -105,6 +116,19 @@ components:
           type: integer
           format: int32
           default: 0
+    ADDODM:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 1
+        tipology:
+          type: string
+        vendor:
+          type: string
+        model:
+          type: string
     RGDM:
       type: object
       properties:

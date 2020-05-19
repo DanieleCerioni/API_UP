@@ -29,6 +29,7 @@ paths:
     post:
       tags:
       - odm
+      summary: add an odm to the system
       operationId: addOdm
       requestBody:
         description: add an odm to the platform
@@ -37,9 +38,14 @@ paths:
             schema:
               $ref: '#/components/schemas/Odm'
       responses:
+        "200":
+          description: Succeful Input
+          content: {}
         "405":
           description: Invalid input
           content: {}
+      x-codegen-request-body-name: body
+    x-codegen-request-body-name: body
   /odm/{idOdm}:
     get:
       tags:
@@ -67,6 +73,37 @@ paths:
           content: {}
         "404":
           description: Odm not found
+          content: {}
+      x-codegen-request-body-name: body
+  /up-simulator/{idOdm}/command:
+    post:
+      tags:
+      - odmCommand
+      summary: commands to send to the breaker
+      operationId: sendCommand
+      parameters:
+      - name: idOdm
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: send the open,close,reset command to the up
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Command'
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content: {}
+        "405":
+          description: Invalid Input
           content: {}
 components:
   schemas:
@@ -208,6 +245,15 @@ components:
         gateway:
           type: string
         dnsServers:
+          type: string
+    Command:
+      type: object
+      properties:
+        open:
+          type: string
+        close:
+          type: string
+        reset:
           type: string
     ErrorMessage:
       type: object

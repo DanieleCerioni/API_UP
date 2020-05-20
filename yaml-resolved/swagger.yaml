@@ -4,13 +4,11 @@ info:
   description: '-----'
   version: 1.0.0
 servers:
-- url: https://virtserver.swaggerhub.com/giodan/UPRestAPI/1.0.0
-  description: SwaggerHub API Auto Mocking
 - url: https://virtserver.swaggerhub.com/gtaffon/SimpleAPI/1.0.0
   description: SwaggerHub API Auto Mocking
 tags:
 - name: ODM
-  description: All the info about the ODMs attached to the up
+  description: All the info about the ODM
 - name: RGDM
   description: All the info's about the RGDM
 - name: UP
@@ -57,28 +55,6 @@ paths:
       summary: return the list of the connected odms
       description: return the full list of the connected odms with the relative properties
       operationId: getAllOdm
-      parameters:
-      - name: offset
-        in: query
-        description: The number of items to skip before starting to collect the result
-          set.
-        required: false
-        style: form
-        explode: true
-        schema:
-          minimum: 0
-          type: integer
-      - name: limit
-        in: query
-        description: The numbers of items to return.
-        required: false
-        style: form
-        explode: true
-        schema:
-          maximum: 50
-          minimum: 1
-          type: integer
-          default: 20
       responses:
         "200":
           description: successful operation
@@ -100,10 +76,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Odm'
+              $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -123,6 +99,14 @@ paths:
       description: return the statistics fot the single odm
       operationId: getOdm
       parameters:
+      - name: domain
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Domain'
       - name: idOdm
         in: path
         description: ID of odm to return
@@ -156,6 +140,14 @@ paths:
       description: remove the selected odm from the system
       operationId: delOdm
       parameters:
+      - name: domain
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Domain'
       - name: idOdm
         in: path
         description: ID of odm to return
@@ -167,7 +159,7 @@ paths:
           format: int64
       responses:
         "200":
-          description: Successful Input
+          description: Successfull Input
           content:
             application/json:
               schema:
@@ -213,7 +205,7 @@ paths:
         required: true
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -262,7 +254,7 @@ paths:
         required: true
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -274,6 +266,21 @@ paths:
           description: Invalid input
           content: {}
   /rgdms:
+    get:
+      tags:
+      - RGDM
+      summary: returns all the rgdm attached to the system
+      operationId: getAllRgdm
+      responses:
+        "200":
+          description: Successfull Input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
     post:
       tags:
       - RGDM
@@ -287,7 +294,7 @@ paths:
               $ref: '#/components/schemas/Rgdm'
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -356,7 +363,7 @@ paths:
               $ref: '#/components/schemas/RgdmAction'
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -385,7 +392,7 @@ paths:
           format: int64
       responses:
         "200":
-          description: Successful Input
+          description: Succefull Input
           content:
             application/json:
               schema:
@@ -421,6 +428,7 @@ components:
           description: short int (aperto, chiuso, blocco stabile)
         automa:
           type: boolean
+          description: enabled/disabled
     OdmMeasurement:
       type: object
       properties:
@@ -493,6 +501,22 @@ components:
       allOf:
       - $ref: '#/components/schemas/OdmDetail'
       - type: object
+    OdmRequest:
+      required:
+      - id
+      - modelName
+      - tipology
+      - vendorName
+      type: object
+      properties:
+        id:
+          type: string
+        tipology:
+          type: string
+        modelName:
+          type: string
+        vendorName:
+          type: string
     Odm:
       required:
       - modelName
@@ -515,11 +539,8 @@ components:
           type: boolean
         status:
           $ref: '#/components/schemas/OdmStatus'
-        phases:
-          type: array
-          items:
-            $ref: '#/components/schemas/Phase'
-      description: odm light infos
+        measurement:
+          $ref: '#/components/schemas/OdmMeasurement'
     Rgdm:
       type: object
       properties:
@@ -673,14 +694,7 @@ components:
     OdmResponse:
       properties:
         payload:
-          discriminator:
-            propertyName: tipology
-            mapping:
-              bt: '#/components/schemas/OdmBTDetail'
-              mt: '#/components/schemas/OdmMTDetail'
-          oneOf:
-          - $ref: '#/components/schemas/OdmBTDetail'
-          - $ref: '#/components/schemas/OdmMTDetail'
+          $ref: '#/components/schemas/OdmDetail'
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
@@ -700,61 +714,14 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
-  parameters:
-    offset:
-      name: offset
-      in: query
-      description: The number of items to skip before starting to collect the result
-        set.
-      required: false
-      style: form
-      explode: true
-      schema:
-        minimum: 0
-        type: integer
-    limit:
-      name: limit
-      in: query
-      description: The numbers of items to return.
-      required: false
-      style: form
-      explode: true
-      schema:
-        maximum: 50
-        minimum: 1
-        type: integer
-        default: 20
   examples:
     odmResponse1:
-      value: "{\n    \"code\": 200,\n    \"payload\": [\n        {\n            \"\
-        id\": 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\"\
-        ,\n            \"vendorName\": \"BTICINO\",\n            \"modelName\": \"\
-        A500\", \n            \"enabled\": \"true\", \n            \"status\": {\n\
-        \                \"ts\": 123456789,\n                \"breaker\": 0\n    \
-        \        },\n            \"measurement\": {\n                \"ts\": 123456789,\n\
-        \                \"phases\": [\n                    {\n                  \
-        \      \"name\": \"P1\",\n                        \"current\": 10,\n     \
-        \                   \"voltage\": 10\n                    },\n            \
-        \        {\n                        \"name\": \"P2\",\n                  \
-        \      \"current\": -5,\n                        \"voltage\": -5\n       \
-        \             },\n                    {\n                        \"name\"\
-        : \"P3\",\n                        \"current\": -5,\n                    \
-        \    \"voltage\": -5\n                    }\n                ]\n         \
-        \   }\n        }\n    ]\n}"
-    odmListResponse1:
-      value: "{\n    \"code\": 200,\n    \"payload\": [\n        {\n            \"\
-        id\": 1, \n            \"name\": \"ODM1\", \n            \"tipology\": \"\
-        bt\", \n            \"vendorName\": \"BTICINO\", \n            \"modelName\"\
-        : \"A500\", \n            \"enabled\": \"true\", \n            \"status\"\
-        : {\n                \"ts\": 123456789, \n                \"breaker\": 0,\
-        \ \n                \"automa\": false \n            },\n            \"phases\"\
-        : [\n                {\n                    \"name\": \"P1\",\n          \
-        \          \"current\": 10,\n                    \"voltage\": 10\n       \
-        \         },\n                {\n                    \"name\": \"P2\",\n \
-        \                   \"current\": -5,\n                    \"voltage\": -5\n\
-        \                },\n                {\n                    \"name\": \"P3\"\
-        ,\n                    \"current\": -5,\n                    \"voltage\":\
-        \ -5\n                }\n            ]\n        }\n    ]\n}"
+      value: '{"code":200, "payload": { "id": 1, "identifier": "ODM 1", "tipology":
+        "MEDIA TENSIONE", "vendor": "BTICINO", "model": "A500", "actualStatus": "ON",
+        "phases": [ { "name": "P1", "current": 10, "voltage": 10 }, { "name": "P2",
+        "current": -5, "voltage": -5 }, { "name": "P3", "current": -5, "voltage":
+        -5 } ] } }'
+    odmListResponse1: {}
     rgdmResponse1:
       value: '{"code":200, "payload": { "id": 1, "identifier": "RGDM 1", "tipology":
         "", "vendor": "ENNEBI", "model": "A500", "actualStatus": "ON", "statusAlarms":"ON",

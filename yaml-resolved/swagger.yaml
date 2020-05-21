@@ -98,17 +98,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Odm'
+              $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
           description: Successful Input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/OdmResponse'
               examples:
                 ok:
-                  $ref: '#/components/examples/apiResponseOK'
+                  $ref: '#/components/examples/odmResponse1'
         "405":
           description: Invalid input
           content: {}
@@ -264,10 +264,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/OdmResponse'
               examples:
                 ok:
-                  $ref: '#/components/examples/apiResponseOK'
+                  $ref: '#/components/examples/odmResponse1'
         "405":
           description: Invalid input
           content: {}
@@ -319,17 +319,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Rgdm'
+              $ref: '#/components/schemas/RgdmRequest'
       responses:
         "200":
           description: Successful Input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/RgdmResponse'
               examples:
                 ok:
-                  $ref: '#/components/examples/apiResponseOK'
+                  $ref: '#/components/examples/rgdmResponse1'
         "405":
           description: Invalid input
           content: {}
@@ -395,10 +395,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/RgdmResponse'
               examples:
                 ok:
-                  $ref: '#/components/examples/apiResponseOK'
+                  $ref: '#/components/examples/rgdmResponse1'
         "405":
           description: Invalid input
           content: {}
@@ -484,8 +484,8 @@ components:
         phases:
           type: array
           items:
-            $ref: '#/components/schemas/PhaseRgdm'
-    OdmMeasurement:
+            $ref: '#/components/schemas/Phase'
+    OdmMeasurements:
       type: object
       properties:
         ts:
@@ -497,23 +497,6 @@ components:
           items:
             $ref: '#/components/schemas/Phase'
     Phase:
-      type: object
-      properties:
-        name:
-          type: string
-          enum:
-          - P1
-          - P2
-          - P3
-        current:
-          type: integer
-          format: int32
-          default: 0
-        voltage:
-          type: integer
-          format: int32
-          default: 0
-    PhaseRgdm:
       type: object
       properties:
         name:
@@ -561,7 +544,7 @@ components:
           type: string
           description: channel to retrieve the data in real time
         measurement:
-          $ref: '#/components/schemas/OdmMeasurement'
+          $ref: '#/components/schemas/OdmMeasurements'
     RgdmDetail:
       required:
       - modelName
@@ -575,7 +558,7 @@ components:
         name:
           type: string
         tipology:
-          type: string
+          $ref: '#/components/schemas/RgdmType'
         modelId:
           type: string
         modelName:
@@ -593,7 +576,7 @@ components:
         physicalAddress:
           type: integer
           description: short int
-          format: int8
+          format: int32
       description: cable config settings
       allOf:
       - $ref: '#/components/schemas/OdmDetail'
@@ -606,38 +589,6 @@ components:
       allOf:
       - $ref: '#/components/schemas/OdmDetail'
       - type: object
-    OdmRequest:
-      required:
-      - id
-      - modelName
-      - tipology
-      - vendorName
-      type: object
-      properties:
-        id:
-          type: string
-        tipology:
-          type: string
-        modelName:
-          type: string
-        vendorName:
-          type: string
-    RgdmRequest:
-      required:
-      - id
-      - modelName
-      - tipology
-      - vendorName
-      type: object
-      properties:
-        id:
-          type: string
-        tipology:
-          type: string
-        modelName:
-          type: string
-        vendorName:
-          type: string
     Odm:
       required:
       - modelName
@@ -674,7 +625,7 @@ components:
         identifier:
           type: string
         tipology:
-          type: string
+          $ref: '#/components/schemas/RgdmType'
         vendor:
           type: string
         model:
@@ -852,17 +803,49 @@ components:
     RgdmResponse:
       properties:
         payload:
-          $ref: '#/components/schemas/RgdmResponse'
+          $ref: '#/components/schemas/RgdmDetail'
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
     RgdmListResponse:
       properties:
         payload:
-          $ref: '#/components/schemas/RgdmListResponse'
+          $ref: '#/components/schemas/RgdmListResponse_payload'
       allOf:
-      - $ref: '#/components/schemas/ApiResponse'
+      - $ref: '#/components/schemas/ApiListResponse'
       - type: object
+    OdmRequest:
+      required:
+      - id
+      - modelName
+      - tipology
+      - vendorName
+      type: object
+      properties:
+        id:
+          type: string
+        tipology:
+          $ref: '#/components/schemas/Domain'
+        modelName:
+          type: string
+        vendorName:
+          type: string
+    RgdmRequest:
+      required:
+      - id
+      - modelName
+      - tipology
+      - vendorName
+      type: object
+      properties:
+        id:
+          type: string
+        tipology:
+          $ref: '#/components/schemas/RgdmType'
+        modelName:
+          type: string
+        vendorName:
+          type: string
     ApiListResponse_payload:
       type: object
       properties:
@@ -884,6 +867,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Odm'
+    RgdmListResponse_payload:
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rgdm'
   parameters:
     offset:
       name: offset
@@ -926,21 +915,22 @@ components:
         \    \"voltage\": -5\n                    }\n                ]\n         \
         \   }\n        }\n    ]\n}"
     odmListResponse1:
-      value: "{\n  \"code\": 200,\n  \"payload\": \n      {\"offset\": 0,\n      \"\
-        limit\": 1,\n      \"items\":[\n          {\n              \"id\": 1, \n \
-        \             \"name\": \"ODM1\", \n              \"tipology\": \"bt\", \n\
-        \              \"vendorName\": \"BTICINO\", \n              \"modelName\"\
-        : \"A500\", \n              \"enabled\": \"true\", \n              \"status\"\
-        : {\n                  \"ts\": 123456789, \n                  \"breaker\"\
-        : 0, \n                  \"automa\": false \n              },\n          \
-        \    \"phases\": [\n                  {\n                      \"name\": \"\
-        P1\",\n                      \"current\": 10,\n                      \"voltage\"\
-        : 10\n                  },\n                  {\n                      \"\
-        name\": \"P2\",\n                      \"current\": -5,\n                \
-        \      \"voltage\": -5\n                  },\n                  {\n      \
-        \                \"name\": \"P3\",\n                      \"current\": -5,\n\
-        \                      \"voltage\": -5\n                  }\n            \
-        \  ]\n          }\n      ]\n  }\n}"
+      value: "{\n    \"code\": 200,\n    \"payload\": \n        {\"offset\": 0,\n\
+        \        \"limit\": 1,\n        \"items\":[\n            {\n             \
+        \   \"id\": 1, \n                \"name\": \"ODM1\", \n                \"\
+        tipology\": \"bt\", \n                \"vendorName\": \"BTICINO\", \n    \
+        \            \"modelName\": \"A500\", \n                \"enabled\": \"true\"\
+        , \n                \"status\": {\n                    \"ts\": 123456789,\
+        \ \n                    \"breaker\": 0, \n                    \"automa\":\
+        \ false \n                },\n                \"phases\": [\n            \
+        \        {\n                        \"name\": \"P1\",\n                  \
+        \      \"current\": 10,\n                        \"voltage\": 10\n       \
+        \             },\n                    {\n                        \"name\"\
+        : \"P2\",\n                        \"current\": -5,\n                    \
+        \    \"voltage\": -5\n                    },\n                    {\n    \
+        \                    \"name\": \"P3\",\n                        \"current\"\
+        : -5,\n                        \"voltage\": -5\n                    }\n  \
+        \              ]\n            }\n        ]\n    }\n}"
     rgdmListResponse1:
       value: "{\n    \"code\": 200,\n    \"payload\": \n        {\"offset\": 0,\n\
         \        \"limit\": 1,\n        \"items\":[\n            {\n             \
@@ -960,7 +950,7 @@ components:
         \              ]\n            }\n        ]\n    }\n}"
     rgdmResponse1:
       value: '{"code":200, "payload": { "id": 1, "identifier": "RGDM 1", "tipology":
-        "", "vendor": "ENNEBI", "model": "A500", "actualStatus": "ON", "statusAlarms":"ON",
+        "RGDAT", "vendor": "ENNEBI", "model": "A500", "actualStatus": "ON", "statusAlarms":"ON",
         "statusProtection":"ON", "phases": [ { "name": "P1", "current": 10, "voltage":
         10 }, { "name": "P2", "current": -5, "voltage": -5 }, { "name": "P3", "current":
         -5, "voltage": -5 } ] } }'

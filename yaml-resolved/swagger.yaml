@@ -207,7 +207,7 @@ paths:
         content:
           '*/*':
             schema:
-              $ref: '#/components/schemas/Phase'
+              $ref: '#/components/schemas/Measure'
         required: true
       responses:
         "200":
@@ -474,45 +474,31 @@ components:
         automi:
           type: boolean
           description: enabled/disabled
-    RgdmMeasurements:
+    Measure:
       type: object
       properties:
         ts:
           type: integer
           description: timestamp (long int)
           format: int32
-        phases:
-          type: array
-          items:
-            $ref: '#/components/schemas/Phase'
-    OdmMeasurements:
-      type: object
-      properties:
-        ts:
-          type: integer
-          description: timestamp (long int)
-          format: int32
-        phases:
-          type: array
-          items:
-            $ref: '#/components/schemas/Phase'
-    Phase:
-      type: object
-      properties:
         name:
           type: string
-          enum:
-          - P1
-          - P2
-          - P3
-        current:
+        type:
+          type: string
+        value:
+          type: string
+    Status:
+      type: object
+      properties:
+        ts:
           type: integer
+          description: timestamp (long int)
           format: int32
-          default: 0
-        voltage:
-          type: integer
-          format: int32
-          default: 0
+        name:
+          type: string
+        value:
+          type: string
+      description: aka event
     OdmDetail:
       required:
       - modelName
@@ -543,8 +529,15 @@ components:
         measurementChannel:
           type: string
           description: channel to retrieve the data in real time
-        measurement:
-          $ref: '#/components/schemas/OdmMeasurements'
+        measurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Measure'
+        statuses:
+          type: array
+          description: the array of events
+          items:
+            $ref: '#/components/schemas/Status'
     RgdmDetail:
       required:
       - modelName
@@ -569,8 +562,21 @@ components:
           type: boolean
         status:
           $ref: '#/components/schemas/RgdmStatus'
-        measurement:
-          $ref: '#/components/schemas/RgdmMeasurements'
+        alarmChannel:
+          type: string
+          description: channel to retrieve the alarm in real time
+        measurementChannel:
+          type: string
+          description: channel to retrieve the data in real time
+        measurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Measure'
+        statuses:
+          type: array
+          description: the array of events
+          items:
+            $ref: '#/components/schemas/Status'
     OdmMTDetail:
       properties:
         physicalAddress:
@@ -614,7 +620,7 @@ components:
         phases:
           type: array
           items:
-            $ref: '#/components/schemas/Phase'
+            $ref: '#/components/schemas/Measure'
       description: odm light infos
     Rgdm:
       type: object
@@ -622,7 +628,7 @@ components:
         id:
           type: integer
           format: int64
-        identifier:
+        name:
           type: string
         tipology:
           $ref: '#/components/schemas/RgdmType'
@@ -630,7 +636,7 @@ components:
           type: string
         model:
           type: string
-        actualStatus:
+        status:
           type: string
           description: stato odm
           enum:
@@ -644,7 +650,7 @@ components:
         phases:
           type: array
           items:
-            $ref: '#/components/schemas/Phase'
+            $ref: '#/components/schemas/Measure'
     RgdmAction:
       type: object
       properties:
@@ -662,9 +668,9 @@ components:
     NetStmConnection:
       type: object
       properties:
-        ActiveConnection:
+        activeConnection:
           type: string
-        ConnectionStatus:
+        connectionStatus:
           type: string
     UP:
       type: object
@@ -949,10 +955,29 @@ components:
         : -5,\n                        \"voltage\": -5\n                    }\n  \
         \              ]\n            }\n        ]\n    }\n}"
     rgdmResponse1:
-      value: '{"code":200, "payload": { "id": 1, "identifier": "RGDM 1", "tipology":
-        "RGDAT", "vendor": "ENNEBI", "model": "A500", "actualStatus": "ON", "statusAlarms":"ON",
-        "statusProtection":"ON", "phases": [ { "name": "P1", "current": 10, "voltage":
-        10 }, { "name": "P2", "current": -5, "voltage": -5 }, { "name": "P3", "current":
-        -5, "voltage": -5 } ] } }'
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "id": "1",
+            "name": "RGDM 1",
+            "tipology": "RGDAT",
+            "modelId": "1",
+            "modelName": "A500",
+            "vendorName": "ENEL",
+            "enabled": true,
+            "status": {
+              "ts": 0,
+              "protection": 0,
+              "automi": true
+            },
+            "measurement": {
+              "ts": 123456789,
+              "phases": [ { "name":
+                "P1", "current": 10, "voltage": 10 }, { "name": "P2", "current": -5,
+                "voltage": -5 }, { "name": "P3", "current": -5, "voltage": -5 } ]
+            }
+          }
+        }
     apiResponseOK:
       value: '{"code":200, "payload": {"message":"SUCCESS"}}'

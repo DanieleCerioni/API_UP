@@ -221,7 +221,7 @@ paths:
         content:
           '*/*':
             schema:
-              $ref: '#/components/schemas/Measure'
+              $ref: '#/components/schemas/SimulOdmCommand'
         required: true
       responses:
         "200":
@@ -405,6 +405,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: Command
+        in: path
+        description: the command to send for the selected odm
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/RgdmCommand'
       requestBody:
         description: send the seguent command to the rgdm
         content:
@@ -496,6 +504,12 @@ components:
           type: string
         value:
           type: object
+    SimulOdmCommand:
+      type: object
+      properties:
+        valueToSend:
+          type: integer
+          format: int32
     Status:
       type: object
       properties:
@@ -653,13 +667,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Measure'
+    RgdmCommand:
+      type: string
+      enum:
+      - remoteTrip
+      - remoteClose
     RgdmAction:
       type: object
       properties:
-        remoteTrip:
-          type: string
-        remoteClose:
-          type: string
+        sendCommand:
+          type: boolean
     NetStm:
       properties:
         parameters:
@@ -779,12 +796,8 @@ components:
     Command:
       type: object
       properties:
-        open:
-          type: string
-        close:
-          type: string
-        reset:
-          type: string
+        sendCommand:
+          type: boolean
     ErrorMessage:
       type: object
       properties:

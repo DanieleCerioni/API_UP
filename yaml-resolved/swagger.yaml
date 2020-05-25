@@ -13,6 +13,10 @@ tags:
   description: All the info's about the RGDM
 - name: UP
   description: All the info about the UP
+- name: UP-SETTINGS
+  description: all the settings about the Up
+- name: UP-SIMULATOR
+  description: all the apis about the simulator of the up
 paths:
   /up/stm:
     get:
@@ -27,30 +31,122 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetStm'
+                $ref: '#/components/schemas/NetStmResponse'
               examples:
                 netStmExample:
                   $ref: '#/components/examples/netStmExample'
         "404":
           description: Not found
           content: {}
-  /up/stm/connection:
+    post:
+      tags:
+      - UP-SETTINGS
+      summary: configures the ip of the stm connected to the up
+      description: send an array of servers
+      operationId: setStm
+      requestBody:
+        description: send the value for the settings of the communication between
+          ip and stm
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NetStmServer'
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
+        "405":
+          description: Invalid input
+          content: {}
+  /up/goose:
+    post:
+      tags:
+      - UP-SETTINGS
+      summary: configures the minimal goose service
+      description: send an array of properties for the goose plugin
+      operationId: setGoose
+      requestBody:
+        description: send the value for the settings of the communication between
+          ip and stm
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GOOSE'
+            examples:
+              gooseSettingsExample:
+                $ref: '#/components/examples/gooseSettingsExample'
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
+        "405":
+          description: Invalid input
+          content: {}
+  /up/network:
+    post:
+      tags:
+      - UP-SETTINGS
+      summary: configure the network service and interface of the up
+      description: send an array of properties for the up network setup
+      operationId: setNetUp
+      requestBody:
+        description: send an array for configure the net Interface. At the voice "name"
+          you must write the name of the interface -> ETH0 / ETH1 / WLAN0
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Network'
+            examples:
+              networkRequestExample:
+                $ref: '#/components/examples/networkRequestExample'
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
+        "405":
+          description: Invalid input
+          content: {}
+  /up/stm/connections:
     get:
       tags:
       - UP
-      summary: return the status of the active connection with the stm
+      summary: return the status of the active connections with the stm
       description: return the status of the active connection with the stm
       operationId: calledStm
       responses:
         "200":
-          description: successful operation
+          description: successfull operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetStmConnection'
+                $ref: '#/components/schemas/NetStmConnectionListResponse'
               examples:
-                netStmConnectionExample:
-                  $ref: '#/components/examples/netStmConnectionExample'
+                netStmConnectionListExample:
+                  $ref: '#/components/examples/netStmConnectionListExample'
         "404":
           description: Not found
           content: {}
@@ -62,27 +158,26 @@ paths:
       description: return the full list of the connected odms with the relative properties
       operationId: getAllOdm
       parameters:
-      - name: offset
+      - name: pageNum
         in: query
-        description: The number of items to skip before starting to collect the result
-          set.
+        description: The page number of items to collect; this means that the offset
+          of items to skip is (pageNum - 1) * pageLimit; a negative or 0 offset means
+          no pagination.
         required: false
         style: form
         explode: true
         schema:
-          minimum: 0
           type: integer
-      - name: limit
+      - name: pageLimit
         in: query
-        description: The numbers of items to return.
+        description: The numbers of items to return in the page; a negative limit
+          means no limit.
         required: false
         style: form
         explode: true
         schema:
-          maximum: 50
-          minimum: 1
           type: integer
-          default: 20
+          default: -1
       responses:
         "200":
           description: successful operation
@@ -107,7 +202,7 @@ paths:
               $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
-          description: Successful Input
+          description: Successfull Input
           content:
             application/json:
               schema:
@@ -186,7 +281,7 @@ paths:
   /up-simulator/odms/{idOdm}:
     put:
       tags:
-      - UP
+      - UP-SIMULATOR
       summary: Simulate current and voltage for the selected Odm
       description: Set the parameters to simulate the current and voltage for a specific
         odm
@@ -208,20 +303,14 @@ paths:
         explode: false
         schema:
           type: string
-      - name: Simulation Phase
-        in: path
-        description: the selected phase for send the data simulation
-        required: true
-        style: simple
-        explode: false
-        schema:
-          $ref: '#/components/schemas/SimulPhase'
       requestBody:
         description: send the value for the simulation
         content:
-          '*/*':
+          application/json:
             schema:
-              $ref: '#/components/schemas/SimulOdmCommand'
+              type: array
+              items:
+                $ref: '#/components/schemas/SimulPhase'
         required: true
       responses:
         "200":
@@ -244,7 +333,7 @@ paths:
           content: {}
     post:
       tags:
-      - UP
+      - UP-SIMULATOR
       summary: commands to send to the breaker
       operationId: sendCommand
       parameters:
@@ -265,20 +354,14 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: Command
-        in: path
-        description: the command to send for the selected odm
-        required: true
-        style: simple
-        explode: false
-        schema:
-          $ref: '#/components/schemas/CommandType'
       requestBody:
-        description: send the open,close,reset command to the up
+        description: Commands to send -> OPEN / CLOSE / RESET
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Command'
+              type: array
+              items:
+                $ref: '#/components/schemas/CommandType'
         required: true
       responses:
         "200":
@@ -300,27 +383,26 @@ paths:
       summary: returns all the rgdm attached to the system
       operationId: getAllRgdm
       parameters:
-      - name: offset
+      - name: pageNum
         in: query
-        description: The number of items to skip before starting to collect the result
-          set.
+        description: The page number of items to collect; this means that the offset
+          of items to skip is (pageNum - 1) * pageLimit; a negative or 0 offset means
+          no pagination.
         required: false
         style: form
         explode: true
         schema:
-          minimum: 0
           type: integer
-      - name: limit
+      - name: pageLimit
         in: query
-        description: The numbers of items to return.
+        description: The numbers of items to return in the page; a negative limit
+          means no limit.
         required: false
         style: form
         explode: true
         schema:
-          maximum: 50
-          minimum: 1
           type: integer
-          default: 20
+          default: -1
       responses:
         "200":
           description: Successfull Input
@@ -405,23 +487,15 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: Command
-        in: path
-        description: the command to send for the selected odm
-        required: true
-        style: simple
-        explode: false
-        schema:
-          $ref: '#/components/schemas/RgdmCommand'
       requestBody:
-        description: send the seguent command to the rgdm
+        description: Possible commands to send -> remoteTrip / remoteClose
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RgdmAction'
       responses:
         "200":
-          description: Successful Input
+          description: Successfull Input
           content:
             application/json:
               schema:
@@ -480,17 +554,35 @@ components:
       - bt
       - mt
     SimulPhase:
-      type: string
-      enum:
-      - P1
-      - P2
-      - P3
+      type: object
+      properties:
+        P1:
+          type: integer
+          format: int32
+        P2:
+          type: integer
+          format: int32
+        P3:
+          type: integer
+          format: int32
+    NetStmServer:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        host:
+          type: string
+          description: the server ip
+        netInterface:
+          type: string
     CommandType:
       type: string
       enum:
-      - open
-      - close
-      - reset
+      - OPEN
+      - CLOSE
+      - RESET
     Measure:
       type: object
       properties:
@@ -504,12 +596,6 @@ components:
           type: string
         value:
           type: object
-    SimulOdmCommand:
-      type: object
-      properties:
-        valueToSend:
-          type: integer
-          format: int32
     Status:
       type: object
       properties:
@@ -667,58 +753,67 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Measure'
-    RgdmCommand:
-      type: string
-      enum:
-      - remoteTrip
-      - remoteClose
     RgdmAction:
       type: object
       properties:
-        sendCommand:
-          type: boolean
-    NetStm:
-      properties:
-        parameters:
-          $ref: '#/components/schemas/STM'
-        stats:
-          $ref: '#/components/schemas/NetStmStats'
-      allOf:
-      - $ref: '#/components/schemas/ApiListResponse'
-      - type: object
+        remoteTrip:
+          type: string
+        remoteClose:
+          type: string
     NetStmStats:
+      properties:
+        defaultServer:
+          type: integer
+          format: int32
+          default: 1
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/StmServer'
+    StmServer:
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        host:
+          type: string
+          description: the server ip
+        netInterface:
+          type: string
+        status:
+          $ref: '#/components/schemas/StmStatus'
+    StmStatus:
+      type: object
       properties:
         ts:
           type: integer
           format: int64
-        firstIpConnected:
+        ping:
           type: boolean
-        secondIpConnected:
-          type: boolean
-        actualInterface:
-          type: string
-      allOf:
-      - $ref: '#/components/schemas/ApiListResponse'
-      - type: object
     NetStmConnection:
       type: object
       properties:
-        idConnection:
+        id:
           type: integer
           format: int64
         commonAddress:
           type: integer
           format: int64
-        stmFirstLastMessage:
-          type: string
-        tsStmFirstLastMessage:
+        startConnectionTs:
           type: integer
           format: int64
-        stmSecondLastMessage:
-          type: string
-        tsStmSecondLastMessage:
+        rxLastMessageTs:
           type: integer
           format: int64
+        txLastMessageTs:
+          type: integer
+          format: int64
+        serverId:
+          type: string
+        serverName:
+          type: string
     UP:
       type: object
       properties:
@@ -740,21 +835,10 @@ components:
         measurementChannel:
           type: string
           description: channel to retrieve the measures in real time
-        STM:
-          $ref: '#/components/schemas/STM'
         GOOSE:
           $ref: '#/components/schemas/GOOSE'
         Network:
           $ref: '#/components/schemas/Network'
-    STM:
-      type: object
-      properties:
-        firstIp:
-          type: string
-        secondIp:
-          type: string
-        netInteface:
-          type: string
     GOOSE:
       type: object
       properties:
@@ -793,11 +877,6 @@ components:
           type: string
         dnsServers:
           type: string
-    Command:
-      type: object
-      properties:
-        sendCommand:
-          type: boolean
     ErrorMessage:
       type: object
       properties:
@@ -863,6 +942,20 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiListResponse'
       - type: object
+    NetStmResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/NetStmStats'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    NetStmConnectionListResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/NetStmConnectionListResponse_payload'
+      allOf:
+      - $ref: '#/components/schemas/ApiListResponse'
+      - type: object
     OdmRequest:
       required:
       - id
@@ -903,16 +996,21 @@ components:
     ApiListResponse_payload:
       type: object
       properties:
-        offset:
+        pageNum:
           type: integer
-          description: data offset (page num); -1 means no offset
+          description: page num; -1 means no pagination
           default: -1
-        limit:
+        pageLimit:
           type: integer
-          description: data limit (num of items); -1 means no limit
+          description: data pageLimit (num of items) in page; -1 means no pageLimit
           default: -1
+        size:
+          type: integer
+          description: the total number of the items
         items:
           type: array
+          description: the subset of items retrieved according to the pageNum and
+            pageLimit specified
           items:
             type: object
     OdmListResponse_payload:
@@ -927,65 +1025,168 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Rgdm'
+    NetStmConnectionListResponse_payload:
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetStmConnection'
   parameters:
-    offset:
-      name: offset
+    pageNum:
+      name: pageNum
       in: query
-      description: The number of items to skip before starting to collect the result
-        set.
+      description: The page number of items to collect; this means that the offset
+        of items to skip is (pageNum - 1) * pageLimit; a negative or 0 offset means
+        no pagination.
       required: false
       style: form
       explode: true
       schema:
-        minimum: 0
         type: integer
-    limit:
-      name: limit
+    pageLimit:
+      name: pageLimit
       in: query
-      description: The numbers of items to return.
+      description: The numbers of items to return in the page; a negative limit means
+        no limit.
       required: false
       style: form
       explode: true
       schema:
-        maximum: 50
-        minimum: 1
         type: integer
-        default: 20
+        default: -1
   examples:
     odmListResponseExample1:
-      value: "{\n    \"code\": 200,\n    \"payload\": \n        {\"offset\": 0,\n\
-        \        \"limit\": 1,\n        \"items\":[\n            {\n             \
-        \   \"id\": 1, \n                \"name\": \"ODM1\", \n                \"\
-        tipology\": \"bt\", \n                \"vendorName\": \"BTICINO\", \n    \
-        \            \"modelName\": \"A500\", \n                \"enabled\": \"true\"\
-        , \n                \"statuses\": [\n                    {\n             \
-        \           \"ts\": 123456789, \n                        \"name\": \"breaker\"\
-        ,\n                        \"type\": \"integer\",\n                      \
-        \  \"value\": \"1\"\n                    },\n                    {\n     \
-        \                   \"ts\": 123456789, \n                        \"name\"\
-        : \"automa\",\n                        \"type\": \"boolean\",\n          \
-        \              \"value\": \"true\"\n                    }\n              \
-        \  ],\n                \"phases\": [\n                    {\n            \
-        \            \"ts\": 123456789, \n                        \"name\": \"currentP1\"\
-        ,\n                        \"type\": \"integer\",\n                      \
-        \  \"value\": \"10\"\n                    },\n                    {\n    \
-        \                    \"ts\": 123456789, \n                        \"name\"\
-        : \"voltageP1\",\n                        \"type\": \"integer\",\n       \
-        \                 \"value\": \"-5\"\n                    },\n            \
-        \        {\n                        \"ts\": 123456789, \n                \
-        \        \"name\": \"currentP2\",\n                        \"type\": \"integer\"\
-        ,\n                        \"value\": \"-5\"\n                    },\n   \
-        \                 {\n                        \"ts\": 123456789, \n       \
-        \                 \"name\": \"voltageP2\",\n                        \"type\"\
-        : \"integer\",\n                        \"value\": \"-5\"\n              \
-        \      },\n                    {\n                        \"ts\": 123456789,\
-        \ \n                        \"name\": \"currentP3\",\n                   \
-        \     \"type\": \"integer\",\n                        \"value\": \"-5\"\n\
-        \                    },\n                    {\n                        \"\
-        ts\": 123456789, \n                        \"name\": \"voltageP3\",\n    \
-        \                    \"type\": \"integer\",\n                        \"value\"\
-        : \"-5\"\n                    }\n                ]\n            }\n      \
-        \  ]\n    }\n}"
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "pageNum": 1,
+            "pageLimit": -1,
+            "size": 2,
+            "items": [
+              {
+                "id": 1,
+                "name": "ODM1",
+                "tipology": "bt",
+                "vendorName": "BTICINO",
+                "modelName": "A500",
+                "enabled": true,
+                "statuses": [
+                  {
+                    "ts": 123456789,
+                    "name": "breaker",
+                    "type": "integer",
+                    "value": 1
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "automa",
+                    "type": "boolean",
+                    "value": true
+                  }
+                ],
+                "phases": [
+                  {
+                    "ts": 123456789,
+                    "name": "current_P1",
+                    "type": "integer",
+                    "value": 10
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P1",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P2",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P2",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P3",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P3",
+                    "type": "integer",
+                    "value": -5
+                  }
+                ]
+              },
+              {
+                "id": 2,
+                "name": "ODM2",
+                "tipology": "mt",
+                "vendorName": "BTICINO",
+                "modelName": "A500",
+                "enabled": false,
+                "statuses": [
+                  {
+                    "ts": 123456789,
+                    "name": "breaker",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "automa",
+                    "type": "boolean",
+                    "value": false
+                  }
+                ],
+                "phases": [
+                  {
+                    "ts": 123456789,
+                    "name": "current_P1",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P1",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P2",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P2",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P3",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P3",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          }
+        }
     odmResponseExample1:
       value: "{\n    \"code\": 200,\n    \"payload\": [\n        {\n            \"\
         id\": 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\"\
@@ -1014,39 +1215,137 @@ components:
         \      \"type\": \"integer\",\n                    \"value\": \"1\"\n    \
         \            }\n            ]\n        }\n    ]\n}"
     rgdmListResponseExample1:
-      value: "{\n    \"code\": 200,\n    \"payload\": \n        {\"offset\": 0,\n\
-        \        \"limit\": 1,\n        \"items\":[\n            {\n             \
-        \   \"id\": 1, \n                \"name\": \"RGDM1\", \n                \"\
-        tipology\": \"RGDAT\", \n                \"vendorName\": \"ENEL\", \n    \
-        \            \"modelName\": \"A500\", \n                \"enabled\": \"true\"\
-        , \n                \"statuses\": [\n                    {\n             \
-        \           \"ts\": 123456789, \n                        \"name\": \"protection\"\
-        ,\n                        \"type\": \"boolean\",\n                      \
-        \  \"value\": \"true\"\n                    },\n                    {\n  \
-        \                      \"ts\": 123456789, \n                        \"name\"\
-        : \"automa\",\n                        \"type\": \"boolean\",\n          \
-        \              \"value\": \"true\"\n                    }\n              \
-        \  ],\n                \"phases\": [\n                    {\n            \
-        \            \"ts\": 123456789, \n                        \"name\": \"currentP1\"\
-        ,\n                        \"type\": \"integer\",\n                      \
-        \  \"value\": \"10\"\n                    },\n                    {\n    \
-        \                    \"ts\": 123456789, \n                        \"name\"\
-        : \"voltageP1\",\n                        \"type\": \"integer\",\n       \
-        \                 \"value\": \"-5\"\n                    },\n            \
-        \        {\n                        \"ts\": 123456789, \n                \
-        \        \"name\": \"currentP2\",\n                        \"type\": \"integer\"\
-        ,\n                        \"value\": \"-5\"\n                    },\n   \
-        \                 {\n                        \"ts\": 123456789, \n       \
-        \                 \"name\": \"voltageP2\",\n                        \"type\"\
-        : \"integer\",\n                        \"value\": \"-5\"\n              \
-        \      },\n                    {\n                        \"ts\": 123456789,\
-        \ \n                        \"name\": \"currentP3\",\n                   \
-        \     \"type\": \"integer\",\n                        \"value\": \"-5\"\n\
-        \                    },\n                    {\n                        \"\
-        ts\": 123456789, \n                        \"name\": \"voltageP3\",\n    \
-        \                    \"type\": \"integer\",\n                        \"value\"\
-        : \"-5\"\n                    }\n                ]\n            }\n      \
-        \  ]\n    }\n}"
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "pageNum": 1,
+            "pageLimit": -1,
+            "size": 2,
+            "items": [
+              {
+                "id": 1,
+                "name": "RGDM1",
+                "tipology": "RGDAT",
+                "vendorName": "ENEL",
+                "modelName": "A500",
+                "enabled": true,
+                "statuses": [
+                  {
+                    "ts": 123456789,
+                    "name": "protection",
+                    "type": "boolean",
+                    "value": true
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "automa",
+                    "type": "boolean",
+                    "value": true
+                  }
+                ],
+                "phases": [
+                  {
+                    "ts": 123456789,
+                    "name": "current_P1",
+                    "type": "integer",
+                    "value": 10
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P1",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P2",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P2",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P3",
+                    "type": "integer",
+                    "value": -5
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P3",
+                    "type": "integer",
+                    "value": -5
+                  }
+                ]
+              },
+              {
+                "id": 2,
+                "name": "RGDM2",
+                "tipology": "RGDM",
+                "vendorName": "ENEL",
+                "modelName": "A500",
+                "enabled": false,
+                "statuses": [
+                  {
+                    "ts": 123456789,
+                    "name": "protection",
+                    "type": "boolean",
+                    "value": false
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "automa",
+                    "type": "boolean",
+                    "value": false
+                  }
+                ],
+                "phases": [
+                  {
+                    "ts": 123456789,
+                    "name": "current_P1",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P1",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P2",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P2",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "current_P3",
+                    "type": "integer",
+                    "value": 0
+                  },
+                  {
+                    "ts": 123456789,
+                    "name": "voltage_P3",
+                    "type": "integer",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          }
+        }
     rgdmResponseExample1:
       value: "{\n  \"code\": 200,\n  \"payload\": {\n    \"id\": \"1\",\n    \"name\"\
         : \"RGDM 1\",\n    \"tipology\": \"RGDAT\",\n    \"modelId\": \"1\",\n   \
@@ -1107,34 +1406,64 @@ components:
               }
             ]
           }
-    netStmConnectionExample:
+        }
+    netStmConnectionListExample:
       value: |-
         {
           "code": 200,
           "payload": {
-          "offset": 0,
+          "pageNum": 1,
+          "pageLimit": -1,
           "size": 2,
           "items": [
-            {
-              "id": "7987984-1",
-              "commonAddress": 7987984,
-              "startConnection": 1590158556,
-              "rxLastMessage": 159015988,
-              "txLastMessage": 159015988,
-              "serverId": 1,
-              "serverName": "STM 1"
-             },
-             {
-              "id": "3487984-1",
-              "commonAddress": 3487984,
-              "startConnection": 1590158556,
-              "rxLastMessage": 159015988,
-              "txLastMessage": 159015988,
-              "serverId": 1,
-              "serverName": "STM 1"
-              }
-            ]
+                {
+                 "id": "7987984-1",
+                "commonAddress": 7987984,
+                "startConnectionTs": 1590158556,
+                "rxLastMessageTs": 159015988,
+                "txLastMessageTs": 159015988,
+                "serverId": 1,
+                "serverName": "STM 1"
+               },
+               {
+                "id": "3487984-1",
+                "commonAddress": 3487984,
+                "startConnectionTs": 1590158556,
+                "rxLastMessageTs": 159015988,
+                "txLastMessageTs": 159015988,
+                "serverId": 1,
+                "serverName": "STM 1"
+                }
+              ]
           }
         }
     apiResponseOK:
       value: '{"code":200, "payload": {"message":"SUCCESS"}}'
+    networkRequestExample:
+      value: |-
+        [ {
+            "networkInterfaces": [
+          {
+           "name": "ETH0",
+           "status": "192.000.000.00",
+           "configure": "192.000.000.00",
+           "ipAddress": "192.000.000.00",
+           "subnetMask": "255.000.000.00",
+           "gateway": "190.00.00.000",
+            "dnsServers": "0.0.0.0"
+            }
+          ]
+        } ]
+    gooseSettingsExample:
+      value: |-
+        [
+
+          {
+            "routing": "string",
+            "macAddress": "string",
+            "repetitionInterval": "string",
+            "netInterface": "string",
+            "bpfFilter": "string"
+          }
+
+        ]

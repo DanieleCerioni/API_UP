@@ -18,6 +18,46 @@ tags:
 - name: UP-SIMULATOR
   description: all the apis about the simulator of the up
 paths:
+  /up/alarms:
+    get:
+      tags:
+      - UP
+      summary: return the list of the alarm received by the up
+      description: return the list of the alarm received by the up
+      operationId: getAlm
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlarmResponse'
+              examples:
+                alarmExample:
+                  $ref: '#/components/examples/AlarmExample'
+        "404":
+          description: not found
+          content: {}
+  /up/measures:
+    get:
+      tags:
+      - UP
+      summary: return the list of the measure
+      description: return the list of the measure provenient from the up
+      operationId: getMeas
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasureResponse'
+              examples:
+                alarmExample:
+                  $ref: '#/components/examples/MeasureExample'
+        "404":
+          description: not found
+          content: {}
   /up/stms:
     get:
       tags:
@@ -1114,6 +1154,20 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
+    AlarmResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/Alarm'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    MeasureResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/Measure'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
     NetStmConnectionListResponse:
       properties:
         payload:
@@ -1658,3 +1712,27 @@ components:
         }
     apiResponseOK:
       value: '{"code":200, "payload": {"message":"SUCCESS"}}'
+    AlarmExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "ts": 0,
+            "name": "string",
+            "type": "string",
+            "value": {},
+            "priority": 0,
+            "code": "string"
+          }
+        }
+    MeasureExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "ts": 0,
+            "name": "string",
+            "type": "string",
+            "value": {}
+          }
+        }

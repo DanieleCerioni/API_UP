@@ -443,6 +443,42 @@ paths:
           description: Odm not found
           content: {}
       x-codegen-request-body-name: body
+    put:
+      tags:
+      - ODM
+      summary: update the configuration for the selected(by Id) odm
+      description: update the tipology, model, vendor, serialPort, address for the
+        selected odm
+      operationId: modOdm
+      parameters:
+      - name: idOdm
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: the field to send
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModOdmRequest'
+      responses:
+        "200":
+          description: successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModOdmResponse'
+        "405":
+          description: Invalid input
+          content: {}
+        "404":
+          description: Not Found
+          content: {}
     delete:
       tags:
       - ODM
@@ -1157,6 +1193,13 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
+    ModOdmResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/ModOdmRequest'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
     OdmResponse:
       properties:
         payload:
@@ -1236,13 +1279,13 @@ components:
       - type: object
     OdmRequest:
       required:
-      - id
       - modelName
+      - name
       - tipology
       - vendorName
       type: object
       properties:
-        id:
+        name:
           type: string
         tipology:
           $ref: '#/components/schemas/Domain'
@@ -1283,6 +1326,22 @@ components:
           type: string
         defaultServer:
           type: boolean
+    ModOdmRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        tipology:
+          type: string
+        modelName:
+          type: string
+        vendorName:
+          type: string
+        address:
+          type: string
+        serialPort:
+          type: string
+      description: the filed to send to the odm to change
     body:
       type: object
       properties:
@@ -1490,12 +1549,12 @@ components:
           }
         }
     odmResponseExample1:
-      value: "{\n    \"code\": 200,\n    \"payload\": [\n        {\n            \"\
-        id\": 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\"\
-        ,\n            \"vendorName\": \"BTICINO\",\n            \"modelName\": \"\
-        A500\", \n            \"enabled\": \"true\", \n            \"alarmChannel\"\
-        : \"ws://34.90.62.54/alarms/odms/ODM1\",\n            \"measurementChannel\"\
-        : \"ws://34.90.62.54/measures/odms/ODM1\",\n            \"measurements\":\
+      value: "{\n    \"code\": 200,\n    \"payload\":\n        {\n            \"id\"\
+        : 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\",\n\
+        \            \"vendorName\": \"BTICINO\",\n            \"modelName\": \"A500\"\
+        , \n            \"enabled\": \"true\", \n            \"alarmChannel\": \"\
+        ws://34.90.62.54/alarms/odms/ODM1\",\n            \"measurementChannel\":\
+        \ \"ws://34.90.62.54/measures/odms/ODM1\",\n            \"measurements\":\
         \ [\n                {\n                    \"ts\": 123456789, \n        \
         \            \"name\": \"currentP1\",\n                    \"type\": \"integer\"\
         ,\n                    \"value\": \"10\"\n                },\n           \
@@ -1516,7 +1575,7 @@ components:
         \            \"statuses\": [\n                {\n                    \"ts\"\
         : 123456789, \n                    \"name\": \"breaker\",\n              \
         \      \"type\": \"integer\",\n                    \"value\": \"1\"\n    \
-        \            }\n            ]\n        }\n    ]\n}"
+        \            }\n            ]\n        }\n}"
     rgdmListResponseExample1:
       value: |-
         {
@@ -1838,6 +1897,16 @@ components:
             "repetitionInterval": "string",
             "netInterface": "string",
             "bpfFilter": "string"
+        }
+    ModifierOdmExample:
+      value: |-
+        {
+            "name": "string",
+            "tipology": "bt",
+            "modelName": "string",
+            "vendorName": "string",
+            "address": "string",
+            "serialPort": "string"
         }
     gooseSettingsResponseExample:
       value: |-

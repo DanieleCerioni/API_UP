@@ -18,31 +18,71 @@ tags:
 - name: UP-SIMULATOR
   description: all the apis about the simulator of the up
 paths:
-  /up/stm:
+  /up:
     get:
       tags:
       - UP
-      summary: return the connection stats with the stm
-      description: return the actual connection stats with the stm
-      operationId: callStm
+      description: return info about the last events occurred (alarm, messages, measures)
+        and the relative channels to listen
+      operationId: getUPStatus
       responses:
         "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetStmResponse'
+                $ref: '#/components/schemas/UPResponse'
               examples:
                 netStmExample:
-                  $ref: '#/components/examples/netStmExample'
+                  $ref: '#/components/examples/upResponseExample'
+    put:
+      tags:
+      - UP
+      operationId: updateUPChannels
+      requestBody:
+        description: set the channels to listen about alarm, messages, measures
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UPResponse'
+              examples:
+                netStmExample:
+                  $ref: '#/components/examples/upResponseExample'
+        "405":
+          description: Invalid input
+          content: {}
+  /up/stms:
+    get:
+      tags:
+      - UP
+      summary: return the connection stats with the stm
+      description: return the actual connection stats with the stm
+      operationId: getStmStats
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStmStatsResponse'
+              examples:
+                netStmExample:
+                  $ref: '#/components/examples/netStmStatsExample'
         "404":
           description: Not found
           content: {}
     post:
       tags:
-      - UP-SETTINGS
+      - UP
       summary: configures the ip of the stm connected to the up
-      description: send an array of servers
+      description: create a new server
       operationId: setStm
       requestBody:
         description: send the value for the settings of the communication between
@@ -50,12 +90,107 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/NetStmServer'
+              $ref: '#/components/schemas/NetStmServerRequest'
       responses:
         "200":
-          description: successfull operation
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStmServerResponse'
+              examples:
+                netStmExample:
+                  $ref: '#/components/examples/netStmServerExample'
+        "405":
+          description: Invalid input
+          content: {}
+  /up/stms/{idStm}:
+    get:
+      tags:
+      - UP
+      summary: returns the configuration for the selected stm
+      description: return the complete stm configuration for the selected idStm
+      operationId: getStm
+      parameters:
+      - name: idStm
+        in: path
+        description: ID of net stm server to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStmServerResponse'
+              examples:
+                netStmExample:
+                  $ref: '#/components/examples/netStmServerExample'
+        "404":
+          description: Not found
+          content: {}
+    put:
+      tags:
+      - UP
+      summary: change the settings for the specific stm
+      description: update the settings for the specific stm selected by the id
+      operationId: updStm
+      parameters:
+      - name: idStm
+        in: path
+        description: ID of net stm server to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: send the value for the simulation
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NetStmServerRequest'
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetStmServerResponse'
+              examples:
+                netStmExample:
+                  $ref: '#/components/examples/netStmServerExample'
+        "404":
+          description: Not found
+          content: {}
+    delete:
+      tags:
+      - UP
+      summary: delete the selected stm's configuration from the system
+      description: delete the configuration of the stm selected by the ip
+      operationId: delStm
+      parameters:
+      - name: idStm
+        in: path
+        description: ID of net stm server to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Successful Input
           content:
             application/json:
               schema:
@@ -66,10 +201,28 @@ paths:
         "405":
           description: Invalid input
           content: {}
+        "404":
+          description: Not found
+          content: {}
   /up/goose:
-    post:
+    get:
       tags:
-      - UP-SETTINGS
+      - UP
+      description: get info about the goose plugin
+      operationId: getGoose
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GOOSEResponse'
+              examples:
+                gooseSettingsResponseExample:
+                  $ref: '#/components/examples/gooseSettingsResponseExample'
+    put:
+      tags:
+      - UP
       summary: configures the minimal goose service
       description: send an array of properties for the goose plugin
       operationId: setGoose
@@ -79,15 +232,40 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GOOSE'
+              $ref: '#/components/schemas/GOOSE'
             examples:
-              gooseSettingsExample:
-                $ref: '#/components/examples/gooseSettingsExample'
+              gooseSettingsResponseExample:
+                $ref: '#/components/examples/gooseSettingsRequestExample'
       responses:
         "200":
-          description: successfull operation
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/apiResponseOK'
+        "405":
+          description: Invalid input
+          content: {}
+    post:
+      tags:
+      - UP
+      summary: send the commands for the goose plugin
+      description: send an array of commands to the goose plugin
+      operationId: sendCommandGoose
+      requestBody:
+        description: send "ACTIVATE" OR "DEACTIVATE" to start an stop the plugin
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GooseCommands'
+      responses:
+        "200":
+          description: successful operation
           content:
             application/json:
               schema:
@@ -99,9 +277,26 @@ paths:
           description: Invalid input
           content: {}
   /up/network:
-    post:
+    get:
       tags:
-      - UP-SETTINGS
+      - UP
+      description: get info about the network service and interface of the up
+      operationId: getNetUp
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Network'
+              examples:
+                networkRequestExample:
+                  $ref: '#/components/examples/networkResponseExample'
+    put:
+      tags:
+      - UP
       summary: configure the network service and interface of the up
       description: send an array of properties for the up network setup
       operationId: setNetUp
@@ -119,7 +314,7 @@ paths:
                 $ref: '#/components/examples/networkRequestExample'
       responses:
         "200":
-          description: successfull operation
+          description: successful operation
           content:
             application/json:
               schema:
@@ -130,7 +325,7 @@ paths:
         "405":
           description: Invalid input
           content: {}
-  /up/stm/connections:
+  /up/stms/connections:
     get:
       tags:
       - UP
@@ -139,7 +334,7 @@ paths:
       operationId: calledStm
       responses:
         "200":
-          description: successfull operation
+          description: successful operation
           content:
             application/json:
               schema:
@@ -202,7 +397,7 @@ paths:
               $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
-          description: Successfull Input
+          description: Successful Input
           content:
             application/json:
               schema:
@@ -248,6 +443,45 @@ paths:
           description: Odm not found
           content: {}
       x-codegen-request-body-name: body
+    put:
+      tags:
+      - ODM
+      summary: update the configuration for the selected (by Id) odm
+      description: update the tipology, model, vendor, serialPort, address for the
+        selected odm
+      operationId: modOdm
+      parameters:
+      - name: idOdm
+        in: path
+        description: ID of odm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: the field to send
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OdmRequest'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OdmResponse'
+              examples:
+                ModifierOdmExample:
+                  $ref: '#/components/examples/ModifierOdmExample'
+        "405":
+          description: Invalid input
+          content: {}
+        "404":
+          description: Not Found
+          content: {}
     delete:
       tags:
       - ODM
@@ -282,6 +516,7 @@ paths:
     put:
       tags:
       - UP-SIMULATOR
+      - ODM
       summary: Simulate current and voltage for the selected Odm
       description: Set the parameters to simulate the current and voltage for a specific
         odm
@@ -334,6 +569,7 @@ paths:
     post:
       tags:
       - UP-SIMULATOR
+      - ODM
       summary: commands to send to the breaker
       operationId: sendCommand
       parameters:
@@ -405,7 +641,7 @@ paths:
           default: -1
       responses:
         "200":
-          description: Successfull Input
+          description: Successful Input
           content:
             application/json:
               schema:
@@ -470,6 +706,47 @@ paths:
         "404":
           description: Rgdm not found
           content: {}
+    put:
+      tags:
+      - RGDM
+      summary: modify the config of the selected rgdm
+      description: update with new value of config the selected rgdm
+      operationId: modRgdm
+      parameters:
+      - name: idRgdm
+        in: path
+        description: ID of rgdm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: the field to send
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RgdmRequest'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ModifierRgdmExample:
+                  $ref: '#/components/examples/ModifierRgdmExample'
+        "400":
+          description: Invalid ID
+          content: {}
+        "404":
+          description: Rgdm not found
+          content: {}
+        "405":
+          description: Invalid input
+          content: {}
     post:
       tags:
       - RGDM
@@ -492,10 +769,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RgdmAction'
+              type: array
+              items:
+                $ref: '#/components/schemas/RgdmAction'
       responses:
         "200":
-          description: Successfull Input
+          description: Successful Input
           content:
             application/json:
               schema:
@@ -565,24 +844,17 @@ components:
         P3:
           type: integer
           format: int32
-    NetStmServer:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        host:
-          type: string
-          description: the server ip
-        netInterface:
-          type: string
     CommandType:
       type: string
       enum:
       - OPEN
       - CLOSE
       - RESET
+    GooseCommands:
+      type: string
+      enum:
+      - ACTIVATE
+      - DEACTIVATE
     Measure:
       type: object
       properties:
@@ -596,6 +868,46 @@ components:
           type: string
         value:
           type: object
+        ref:
+          type: string
+          description: the optional reference to the device (ie. endpoint url)
+    Alarm:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: timestamp (long int)
+          format: int32
+        name:
+          type: string
+        type:
+          type: string
+        value:
+          type: object
+        priority:
+          type: integer
+        code:
+          type: string
+          description: the alarm code
+        ref:
+          type: string
+          description: the optional reference to the device (ie. endpoint url)
+    LogMessage:
+      type: object
+      properties:
+        ts:
+          type: integer
+          description: timestamp (long int)
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+        priority:
+          type: integer
+        code:
+          type: string
+          description: the message code
     Status:
       type: object
       properties:
@@ -635,6 +947,10 @@ components:
         alarmChannel:
           type: string
           description: channel to retrieve the alarm in real time
+        alarms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alarm'
         measurementChannel:
           type: string
           description: channel to retrieve the data in real time
@@ -672,6 +988,10 @@ components:
         alarmChannel:
           type: string
           description: channel to retrieve the alarm in real time
+        alarms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alarm'
         measurementChannel:
           type: string
           description: channel to retrieve the data in real time
@@ -754,12 +1074,10 @@ components:
           items:
             $ref: '#/components/schemas/Measure'
     RgdmAction:
-      type: object
-      properties:
-        remoteTrip:
-          type: string
-        remoteClose:
-          type: string
+      type: string
+      enum:
+      - remoteTrip
+      - remoteClose
     NetStmStats:
       properties:
         defaultServer:
@@ -769,8 +1087,8 @@ components:
         servers:
           type: array
           items:
-            $ref: '#/components/schemas/StmServer'
-    StmServer:
+            $ref: '#/components/schemas/NetStmServer'
+    NetStmServer:
       properties:
         id:
           type: integer
@@ -780,6 +1098,19 @@ components:
         host:
           type: string
           description: the server ip
+        netInterface:
+          type: string
+        status:
+          $ref: '#/components/schemas/StmStatus'
+    NetStmServerDetail:
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        host:
+          type: string
         netInterface:
           type: string
         status:
@@ -817,28 +1148,27 @@ components:
     UP:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        info:
+        logChannel:
           type: string
-        alarm:
-          type: string
-        configuration:
-          $ref: '#/components/schemas/Setup'
-    Setup:
-      type: object
-      properties:
+          description: channel to retrieve the log messages in real time
         alarmChannel:
           type: string
           description: channel to retrieve the alarm in real time
         measurementChannel:
           type: string
           description: channel to retrieve the measures in real time
-        GOOSE:
-          $ref: '#/components/schemas/GOOSE'
-        Network:
-          $ref: '#/components/schemas/Network'
+        logMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogMessage'
+        alarms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alarm'
+        measures:
+          type: array
+          items:
+            $ref: '#/components/schemas/Measure'
     GOOSE:
       type: object
       properties:
@@ -942,10 +1272,38 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiListResponse'
       - type: object
-    NetStmResponse:
+    UPResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/UP'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    GOOSEResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/GOOSE'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    NetworkResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/Network'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    NetStmStatsResponse:
       properties:
         payload:
           $ref: '#/components/schemas/NetStmStats'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    NetStmServerResponse:
+      properties:
+        payload:
+          $ref: '#/components/schemas/NetStmServerDetail'
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
@@ -958,13 +1316,13 @@ components:
       - type: object
     OdmRequest:
       required:
-      - id
       - modelName
+      - name
       - tipology
       - vendorName
       type: object
       properties:
-        id:
+        name:
           type: string
         tipology:
           $ref: '#/components/schemas/Domain'
@@ -993,6 +1351,30 @@ components:
           type: string
         vendorName:
           type: string
+    NetStmServerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        host:
+          type: string
+          description: the server ip
+        netInterface:
+          type: string
+        defaultServer:
+          type: boolean
+    body:
+      type: object
+      properties:
+        logChannel:
+          type: string
+          description: channel to retrieve the log messages in real time
+        alarmChannel:
+          type: string
+          description: channel to retrieve the alarm in real time
+        measurementChannel:
+          type: string
+          description: channel to retrieve the measures in real time
     ApiListResponse_payload:
       type: object
       properties:
@@ -1188,12 +1570,13 @@ components:
           }
         }
     odmResponseExample1:
-      value: "{\n    \"code\": 200,\n    \"payload\": [\n        {\n            \"\
-        id\": 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\"\
-        ,\n            \"vendorName\": \"BTICINO\",\n            \"modelName\": \"\
-        A500\", \n            \"enabled\": \"true\", \n            \"measurementChannel\"\
-        : \"mqtt://34.90.62.54/vkura01/ODM1/measures\",\n            \"measurements\"\
-        : [\n                {\n                    \"ts\": 123456789, \n        \
+      value: "{\n    \"code\": 200,\n    \"payload\":\n        {\n            \"id\"\
+        : 1, \n            \"name\": \"ODM1\",\n            \"tipology\": \"bt\",\n\
+        \            \"vendorName\": \"BTICINO\",\n            \"modelName\": \"A500\"\
+        , \n            \"enabled\": \"true\", \n            \"alarmChannel\": \"\
+        ws://34.90.62.54/alarms/odms/ODM1\",\n            \"measurementChannel\":\
+        \ \"ws://34.90.62.54/measures/odms/ODM1\",\n            \"measurements\":\
+        \ [\n                {\n                    \"ts\": 123456789, \n        \
         \            \"name\": \"currentP1\",\n                    \"type\": \"integer\"\
         ,\n                    \"value\": \"10\"\n                },\n           \
         \     {\n                    \"ts\": 123456789, \n                    \"name\"\
@@ -1213,7 +1596,7 @@ components:
         \            \"statuses\": [\n                {\n                    \"ts\"\
         : 123456789, \n                    \"name\": \"breaker\",\n              \
         \      \"type\": \"integer\",\n                    \"value\": \"1\"\n    \
-        \            }\n            ]\n        }\n    ]\n}"
+        \            }\n            ]\n        }\n}"
     rgdmListResponseExample1:
       value: |-
         {
@@ -1355,29 +1738,69 @@ components:
         ,\n            \"value\": \"true\"\n        },\n        {\n            \"\
         ts\": 123456789, \n            \"name\": \"automa\",\n            \"type\"\
         : \"boolean\",\n            \"value\": \"true\"\n        }\n    ],\n    \"\
-        measurementChannel\": \"mqtt://34.90.62.54/vkura01/RGDM1/measures\",\n   \
-        \ \"measurements\": [\n                {\n                    \"ts\": 123456789,\
-        \ \n                    \"name\": \"currentP1\",\n                    \"type\"\
-        : \"integer\",\n                    \"value\": \"10\"\n                },\n\
-        \                {\n                    \"ts\": 123456789, \n            \
-        \        \"name\": \"voltageP1\",\n                    \"type\": \"integer\"\
-        ,\n                    \"value\": \"-5\"\n                },\n           \
+        alarmChannel\": \"ws://34.90.62.54/alarms/rgdms/RGDM1\",\n    \"measurementChannel\"\
+        : \"ws://34.90.62.54/measures/rgdms/RGDM1\",\n    \"measurements\": [\n  \
+        \              {\n                    \"ts\": 123456789, \n              \
+        \      \"name\": \"currentP1\",\n                    \"type\": \"integer\"\
+        ,\n                    \"value\": \"10\"\n                },\n           \
         \     {\n                    \"ts\": 123456789, \n                    \"name\"\
-        : \"currentP2\",\n                    \"type\": \"integer\",\n           \
+        : \"voltageP1\",\n                    \"type\": \"integer\",\n           \
         \         \"value\": \"-5\"\n                },\n                {\n     \
-        \               \"ts\": 123456789, \n                    \"name\": \"voltageP2\"\
+        \               \"ts\": 123456789, \n                    \"name\": \"currentP2\"\
         ,\n                    \"type\": \"integer\",\n                    \"value\"\
         : \"-5\"\n                },\n                {\n                    \"ts\"\
-        : 123456789, \n                    \"name\": \"currentP3\",\n            \
+        : 123456789, \n                    \"name\": \"voltageP2\",\n            \
         \        \"type\": \"integer\",\n                    \"value\": \"-5\"\n \
         \               },\n                {\n                    \"ts\": 123456789,\
-        \ \n                    \"name\": \"voltageP3\",\n                    \"type\"\
-        : \"integer\",\n                    \"value\": \"-5\"\n                }\n\
-        \            ],\n    \"statuses\": [\n                {\n                \
-        \    \"ts\": 123456789, \n                    \"name\": \"breaker\",\n   \
-        \                 \"type\": \"integer\",\n                    \"value\": \"\
-        1\"\n                }\n            ]\n    }\n}"
-    netStmExample:
+        \ \n                    \"name\": \"currentP3\",\n                    \"type\"\
+        : \"integer\",\n                    \"value\": \"-5\"\n                },\n\
+        \                {\n                    \"ts\": 123456789, \n            \
+        \        \"name\": \"voltageP3\",\n                    \"type\": \"integer\"\
+        ,\n                    \"value\": \"-5\"\n                }\n            ],\n\
+        \    \"statuses\": [\n                {\n                    \"ts\": 123456789,\
+        \ \n                    \"name\": \"breaker\",\n                    \"type\"\
+        : \"integer\",\n                    \"value\": \"1\"\n                }\n\
+        \            ]\n    }\n}"
+    upResponseExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "logChannel": "ws://34.90.62.54/logs",
+            "alarmChannel": "ws://34.90.62.54/alarms",
+            "measurementChannel": "ws://34.90.62.54/measures",
+            "logMessages": [
+                {
+                  "ts": 123456789,
+                  "type": "TEXT PLAIN",
+                  "priority": 1,
+                  "message": "Sovratensione: RGDM1 - P1 - 100 kv",
+                  "code": "ALARM"
+                }
+            ],
+            "alarms" : [
+                {
+                  "ts": 123456789,
+                  "name": "Allarme misure",
+                  "type": "string",
+                  "value": "Sovratensione",
+                  "priority": 1,
+                  "code": "500-11",
+                  "ref": "/up/rgdms/1"
+                }
+            ],
+            "measurements" : [
+                {
+                  "ts": 123456789,
+                  "name": "P1",
+                  "type": "integer",
+                  "value": 100000,
+                  "ref": "/up/rgdms/1"
+                }
+            ]
+          }
+        }
+    netStmStatsExample:
       value: |-
         {
           "code": 200,
@@ -1407,6 +1830,21 @@ components:
             ]
           }
         }
+    netStmServerExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "id": 1,
+            "name": "STM 1",
+            "host": "192.144.144.141",
+            "netInterface": "eth0",
+            "status": {
+              "ts": 123456789,
+              "ping": true
+            }
+          }
+        }
     netStmConnectionListExample:
       value: |-
         {
@@ -1434,36 +1872,82 @@ components:
                 "serverId": 1,
                 "serverName": "STM 1"
                 }
-              ]
+            ]
           }
         }
-    apiResponseOK:
-      value: '{"code":200, "payload": {"message":"SUCCESS"}}'
     networkRequestExample:
       value: |-
-        [ {
-            "networkInterfaces": [
-          {
-           "name": "ETH0",
-           "status": "192.000.000.00",
-           "configure": "192.000.000.00",
-           "ipAddress": "192.000.000.00",
-           "subnetMask": "255.000.000.00",
-           "gateway": "190.00.00.000",
-            "dnsServers": "0.0.0.0"
-            }
-          ]
-        } ]
-    gooseSettingsExample:
-      value: |-
         [
-
           {
+            "networkInterfaces": [
+              {
+               "name": "ETH0",
+               "status": "192.000.000.00",
+               "configure": "192.000.000.00",
+               "ipAddress": "192.000.000.00",
+               "subnetMask": "255.000.000.00",
+               "gateway": "190.00.00.000",
+                "dnsServers": "0.0.0.0"
+              }
+            ]
+          }
+        ]
+    networkResponseExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
+            "networkInterfaces": [
+              {
+               "name": "ETH0",
+               "status": "192.000.000.00",
+               "configure": "192.000.000.00",
+               "ipAddress": "192.000.000.00",
+               "subnetMask": "255.000.000.00",
+               "gateway": "190.00.00.000",
+               "dnsServers": "0.0.0.0"
+              }
+            ]
+          }
+        }
+    gooseSettingsRequestExample:
+      value: |-
+        {
+            "routing": "string",
+            "macAddress": "string",
+            "repetitionInterval": "string",
+            "netInterface": "string",
+            "bpfFilter": "string"
+        }
+    ModifierOdmExample:
+      value: |-
+        {
+            "name": "string",
+            "tipology": "bt",
+            "modelName": "string",
+            "vendorName": "string",
+            "address": "string",
+            "serialPort": "string"
+        }
+    ModifierRgdmExample:
+      value: |-
+        {
+          "id": "string",
+          "tipology": "RGDAT",
+          "modelName": "string",
+          "vendorName": "string"
+        }
+    gooseSettingsResponseExample:
+      value: |-
+        {
+          "code": 200,
+          "payload": {
             "routing": "string",
             "macAddress": "string",
             "repetitionInterval": "string",
             "netInterface": "string",
             "bpfFilter": "string"
           }
-
-        ]
+        }
+    apiResponseOK:
+      value: '{"code":200, "payload": {"message":"SUCCESS"}}'

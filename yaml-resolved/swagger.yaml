@@ -446,7 +446,7 @@ paths:
     put:
       tags:
       - ODM
-      summary: update the configuration for the selected(by Id) odm
+      summary: update the configuration for the selected (by Id) odm
       description: update the tipology, model, vendor, serialPort, address for the
         selected odm
       operationId: modOdm
@@ -465,14 +465,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModOdmRequest'
+              $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
-          description: successfull operation
+          description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModOdmResponse'
+                $ref: '#/components/schemas/OdmResponse'
+              examples:
+                ModifierOdmExample:
+                  $ref: '#/components/examples/ModifierOdmExample'
         "405":
           description: Invalid input
           content: {}
@@ -702,6 +705,47 @@ paths:
           content: {}
         "404":
           description: Rgdm not found
+          content: {}
+    put:
+      tags:
+      - RGDM
+      summary: modify the config of the selected rgdm
+      description: update with new value of config the selected rgdm
+      operationId: modRgdm
+      parameters:
+      - name: idRgdm
+        in: path
+        description: ID of rgdm to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: the field to send
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RgdmRequest'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                ModifierRgdmExample:
+                  $ref: '#/components/examples/ModifierRgdmExample'
+        "400":
+          description: Invalid ID
+          content: {}
+        "404":
+          description: Rgdm not found
+          content: {}
+        "405":
+          description: Invalid input
           content: {}
     post:
       tags:
@@ -1193,13 +1237,6 @@ components:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
-    ModOdmResponse:
-      properties:
-        payload:
-          $ref: '#/components/schemas/ModOdmRequest'
-      allOf:
-      - $ref: '#/components/schemas/ApiResponse'
-      - type: object
     OdmResponse:
       properties:
         payload:
@@ -1326,22 +1363,6 @@ components:
           type: string
         defaultServer:
           type: boolean
-    ModOdmRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        tipology:
-          type: string
-        modelName:
-          type: string
-        vendorName:
-          type: string
-        address:
-          type: string
-        serialPort:
-          type: string
-      description: the filed to send to the odm to change
     body:
       type: object
       properties:
@@ -1907,6 +1928,14 @@ components:
             "vendorName": "string",
             "address": "string",
             "serialPort": "string"
+        }
+    ModifierRgdmExample:
+      value: |-
+        {
+          "id": "string",
+          "tipology": "RGDAT",
+          "modelName": "string",
+          "vendorName": "string"
         }
     gooseSettingsResponseExample:
       value: |-

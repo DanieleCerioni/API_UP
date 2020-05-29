@@ -465,7 +465,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OdmRequest'
+              type: array
+              items:
+                $ref: '#/components/schemas/OdmRequest'
       responses:
         "200":
           description: successful operation
@@ -473,7 +475,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OdmResponse'
-              examples:
+              example:
                 ModifierOdmExample:
                   $ref: '#/components/examples/ModifierOdmExample'
         "405":
@@ -943,7 +945,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         name:
           type: string
         tipology:
@@ -984,7 +987,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         name:
           type: string
         tipology:
@@ -1043,7 +1047,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         name:
           type: string
         tipology:
@@ -1104,7 +1109,7 @@ components:
       properties:
         id:
           type: integer
-          format: int32
+          format: int64
         name:
           type: string
         host:
@@ -1118,7 +1123,7 @@ components:
       properties:
         id:
           type: integer
-          format: int32
+          format: int64
         name:
           type: string
         host:
@@ -1369,7 +1374,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         tipology:
           $ref: '#/components/schemas/RgdmType'
         modelName:
@@ -1948,13 +1954,9 @@ components:
             "serialPort": "string"
         }
     ModifierRgdmExample:
-      value: |-
-        {
-          "id": "string",
-          "tipology": "RGDAT",
-          "modelName": "string",
-          "vendorName": "string"
-        }
+      value: "{\n  \"id\": \"string\",\n  \"tipology\": \"RGDAT\",\n  \"modelName\"\
+        : \"string\",\n  \"vendorName\": \"string\"\n}\n                         \
+        \            "
     gooseSettingsResponseExample:
       value: |-
         {

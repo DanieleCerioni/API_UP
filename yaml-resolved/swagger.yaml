@@ -1160,6 +1160,16 @@ components:
     UP:
       type: object
       properties:
+        latitude:
+          type: string
+        longitude:
+          type: string
+        model:
+          type: string
+        board:
+          type: string
+        firmwareVersion:
+          type: string
         logChannel:
           type: string
           description: channel to retrieve the log messages in real time
@@ -1769,6 +1779,11 @@ components:
         {
           "code": 200,
           "payload": {
+            "latitude" : "49.78977987"
+            "longitude": "51.68768746"
+            "model": "UP2020"
+            "board": "SMC465"
+            "firmwareVersion": "1.0.beta"
             "logChannel": "ws://34.90.62.54/logs",
             "alarmChannel": "ws://34.90.62.54/alarms",
             "measurementChannel": "ws://34.90.62.54/measures",

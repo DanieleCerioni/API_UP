@@ -44,7 +44,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body'
+              $ref: '#/components/schemas/SetupChannels'
       responses:
         "200":
           description: successful operation
@@ -855,6 +855,18 @@ components:
       enum:
       - ACTIVATE
       - DEACTIVATE
+    SetupChannels:
+      type: object
+      properties:
+        logChannel:
+          type: string
+          description: channel to retrieve the log messages in real time
+        alarmChannel:
+          type: string
+          description: channel to retrieve the alarm in real time
+        measurementChannel:
+          type: string
+          description: channel to retrieve the measures in real time
     Measure:
       type: object
       properties:
@@ -1318,11 +1330,14 @@ components:
       required:
       - modelName
       - name
+      - number
       - tipology
       - vendorName
       type: object
       properties:
         name:
+          type: string
+        number:
           type: string
         tipology:
           $ref: '#/components/schemas/Domain'
@@ -1363,18 +1378,6 @@ components:
           type: string
         defaultServer:
           type: boolean
-    body:
-      type: object
-      properties:
-        logChannel:
-          type: string
-          description: channel to retrieve the log messages in real time
-        alarmChannel:
-          type: string
-          description: channel to retrieve the alarm in real time
-        measurementChannel:
-          type: string
-          description: channel to retrieve the measures in real time
     ApiListResponse_payload:
       type: object
       properties:

@@ -345,6 +345,51 @@ paths:
         "404":
           description: Not found
           content: {}
+  /up/ntp:
+    get:
+      tags:
+      - UP
+      summary: indicates the server to set the ntp server
+      description: return the server for the ntp service
+      operationId: calledNtpServer
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NtpConnections'
+              examples:
+                ntpGet:
+                  $ref: '#/components/examples/NtpResponseExample'
+        "404":
+          description: Not found
+          content: {}
+    put:
+      tags:
+      - UP
+      summary: set the server for the ntp service
+      description: set a server for the ntp service
+      operationId: setNtpServer
+      requestBody:
+        description: insert the ntp server
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NtpDetail'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        "404":
+          description: not found
+          content: {}
+        "405":
+          description: invalid operation
+          content: {}
   /up/odms:
     get:
       tags:
@@ -834,6 +879,13 @@ components:
       enum:
       - bt
       - mt
+    NtpDetail:
+      type: object
+      properties:
+        name:
+          type: string
+        ip-address:
+          type: string
     SimulPhase:
       type: object
       properties:
@@ -1331,6 +1383,13 @@ components:
       properties:
         payload:
           $ref: '#/components/schemas/NetStmServerDetail'
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+    NtpConnections:
+      properties:
+        payload:
+          $ref: '#/components/schemas/NtpDetail'
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
       - type: object
@@ -1969,5 +2028,8 @@ components:
             "bpfFilter": "string"
           }
         }
+    NtpResponseExample:
+      value: "{         \n   \"kind\": \"ntp-server\",\n   \"ip-address\": \"172.25.25.25\"\
+        \n}"
     apiResponseOK:
       value: '{"code":200, "payload": {"message":"SUCCESS"}}'
